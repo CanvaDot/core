@@ -1,0 +1,17 @@
+
+[build]
+target = "core/frontend/index.html"
+dist = "dist/"
+
+[serve]
+port = 8080
+open = true
+
+[watch]
+ignore = [
+	"Cargo.lock",
+	"README.md",
+	".gitignore",
+	"target",
+	"core/backend/"
+]

@@ -22,6 +22,5 @@ COPY --from=installer /usr/local/cargo/bin/just /home/dev/.cargo/bin/just
 RUN rustup target add wasm32-unknown-unknown
 
 EXPOSE 8080
-EXPOSE 8081
 
 CMD just dev

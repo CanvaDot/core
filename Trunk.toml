@@ -4,6 +4,7 @@ target = "core/frontend/index.html"
 dist = "dist/"
 
 [serve]
+addresses = ["0.0.0.0"]
 port = 8080
 open = true
 

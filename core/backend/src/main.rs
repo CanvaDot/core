@@ -15,7 +15,7 @@ async fn main() -> Result<(), AppError> {
         App::new()
             .route("/", get().to(async || HttpResponse::Ok().body("Hello World!")))
     })
-        .bind(("0.0.0.0", 8080))?
+        .bind(("0.0.0.0", 8081))?
         .run()
         .await?;
 

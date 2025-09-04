@@ -1,8 +1,16 @@
-mod app;
+#![deny(clippy::pedantic)]
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::match_like_matches_macro)]
 
 use app::App;
-use tracing_subscriber::{filter::Targets, prelude::*};
+use tracing_subscriber::filter::Targets;
+use tracing_subscriber::prelude::*;
 use tracing_web::MakeWebConsoleWriter;
+
+mod app;
+
+#[cfg(test)]
+mod tests;
 
 fn main() {
     // Configure tracing to output to browser console
@@ -16,9 +24,10 @@ fn main() {
                 .with_default(tracing::Level::TRACE),
         );
 
-    tracing_subscriber::registry().with(fmt_layer).init();
+    tracing_subscriber::registry()
+        .with(fmt_layer)
+        .init();
 
     tracing::info!("Starting Yew application");
     yew::Renderer::<App>::new().render();
 }
-

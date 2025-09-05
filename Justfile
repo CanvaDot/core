@@ -13,7 +13,7 @@ set dotenv-load
 		[[ -f /.dockerenv ]] ||
 		grep -qE '(docker|containerd|kubepods)' /proc/1/cgroup 2>/dev/null;
 	then
-		cargo run -p backend 2>&1 & :;
+		cargo watch -x 'run -p backend' 2>&1 & :;
 		trunk serve --config Trunk.toml 2>&1 & :;
 		wait;
 	else
@@ -59,18 +59,18 @@ set dotenv-load
 	set -e;
 
 	if [[ -z "{{ export_path }}" ]]; then
-		coverage=$(cargo llvm-cov -- --nocapture --quiet 2>/dev/null \
+		coverage=$(cargo llvm-cov --features no_coverage --all -- --nocapture --quiet 2>/dev/null \
 			| grep "^TOTAL" \
-			| awk "{print $10}");
+			| awk '{print $10}');
 
 		if [[ -z "$coverage" ]]; then
 			echo "Tests failed, run 'just test code' to find out why.";
 			exit 1;
 		fi
 
-		echo "${coverage/%/ }";
+		echo "${coverage/%\%/ }";
 	else
-		cargo llvm-cov --lcov -- --nocapture > "{{ export_path }}" 2>/dev/null;
+		cargo llvm-cov --lcov --features no_coverage --all > "{{ export_path }}" 2>/dev/null;
 	fi
 
 

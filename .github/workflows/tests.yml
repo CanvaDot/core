@@ -1,0 +1,61 @@
+name: Test project
+
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+
+jobs:
+  tests:
+    name: Test project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        with:
+          rust-toolchain: nightly
+          rust-components: llvm-tools-preview rustfmt clippy
+          rust-packages: cargo-llvm-cov just
+
+
+      - name: Run Code Lint Checks And Tests
+        run: just test code fmt clippy;
+
+
+      - name: Check Code Coverage
+        if: success() && github.ref == 'refs/heads/main'
+        run: just coverage "./coverage.lcov";
+
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v5
+        if: success() && github.ref == 'refs/heads/main'
+        with:
+          file: coverage.lcov
+          fail_ci_if_error: true
+          slug: "CanvaDot/core"
+          verbose: true
+
+
+      - name: Fail If Coverage Is Below 80%
+        run: |
+          coverage=$(just coverage);
+          coverage=${coverage//[[:space:]]};
+          coverage=${coverage%.*};
+          if (( coverage < 80 )); then
+            echo "❌ Coverage is below 80% ($coverage%)";
+            exit 1;
+          else
+            echo "✅ Coverage meets requirement ($coverage%)";
+          fi
+

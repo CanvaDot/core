@@ -1,0 +1,54 @@
+name: Test GitHub Meta
+
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+
+permissions:
+  contents: read
+  pull-requests: read
+
+
+jobs:
+  "Commit Meta":
+    name: Validate Commit Conventions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Conventional Commit Validation
+        uses: webiny/action-conventional-commits@v1.3.0
+        with:
+          allowed-commit-types: "feat,fix,docs,test,ci,refactor,perf,chore,revert"
+
+
+  "Pr Meta":
+    name: Validate PR Conventions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Conventional Pull Request Validation
+        uses: amannn/action-semantic-pull-request@v5
+        with:
+          requireScope: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  "CodeCov File":
+    name: Validate CodeCov File
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+
+      - name: "'codecov.yml' Validation"
+        run: |
+          if [[ -f "./codecov.yml" ]]; then
+            curl -f -X POST --data-binary @codecov.yml https://codecov.io/validate \
+            || echo "The 'codecov.yml' file validation was not successful."
+            && exit 1;
+          fi

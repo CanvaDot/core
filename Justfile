@@ -1,6 +1,5 @@
 set dotenv-load
 
-export RUST_LOG := 'info'
 
 @default:
 	just --list;
@@ -18,6 +17,11 @@ export RUST_LOG := 'info'
 		trunk serve --config Trunk.toml 2>&1 & :;
 		wait;
 	else
+		if !command -v docker >/dev/null 2>&1; then
+			echo "Please, install a linux compatible version of docker before continuing.";
+			exit 1;
+		fi
+
 		docker compose -f ./docker/dev.docker-compose.yml up --no-deps --build;
 	fi
 
@@ -39,7 +43,7 @@ export RUST_LOG := 'info'
 
 	for target in {{ targets }}; do
 		case "$target" in
-			"tests") run_cmd "tests" cargo +nightly test --all ;;
+			"code") run_cmd "code" cargo +nightly test --all ;;
 
 			"fmt") run_cmd "fmt" cargo +nightly fmt --check --all ;;
 
@@ -48,6 +52,26 @@ export RUST_LOG := 'info'
 			*) echo "Unknown command '$target'." ;;
 		esac
 	done
+
+
+@coverage export_path="":
+	#!/bin/bash
+	set -e;
+
+	if [[ -z "{{ export_path }}" ]]; then
+		coverage=$(cargo llvm-cov -- --nocapture --quiet 2>/dev/null \
+			| grep "^TOTAL" \
+			| awk "{print $10}");
+
+		if [[ -z "$coverage" ]]; then
+			echo "Tests failed, run 'just test code' to find out why.";
+			exit 1;
+		fi
+
+		echo "${coverage/%/ }";
+	else
+		cargo llvm-cov --lcov -- --nocapture > "{{ export_path }}" 2>/dev/null;
+	fi
 
 
 @clean:

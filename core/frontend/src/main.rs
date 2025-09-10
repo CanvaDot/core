@@ -2,7 +2,7 @@
 #![deny(clippy::unwrap_used)]
 #![deny(clippy::match_like_matches_macro)]
 
-#[cfg(not(feature = "no_coverage"))]
+#[cfg(not(feature = "coverage"))]
 use ::{
     tracing::{info, Level as TracingLevel},
     tracing_subscriber::filter::Targets,
@@ -12,13 +12,13 @@ use ::{
     yew::Renderer,
 };
 
-#[cfg(not(feature = "no_coverage"))]
+#[cfg(not(feature = "coverage"))]
 use crate::components::app::App;
 
-#[cfg(not(feature = "no_coverage"))]
+#[cfg(not(feature = "coverage"))]
 mod components;
 
-#[cfg(not(feature = "no_coverage"))]
+#[cfg(not(feature = "coverage"))]
 fn main() {
     let fmt_layer = ts_layer()
         .with_ansi(true)
@@ -38,10 +38,11 @@ fn main() {
     Renderer::<App>::new().render();
 }
 
-#[cfg(feature = "no_coverage")]
+#[cfg(feature = "coverage")]
 fn main() {}
 
-#[cfg(feature = "no_coverage")]
+#[cfg(feature = "coverage")]
+#[cfg(test)]
 mod tests {
     use crate::main;
 

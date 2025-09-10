@@ -9,4 +9,4 @@ thiserror = "2.0.16"
 
 [features]
 default = []
-no_coverage = []
+coverage = []

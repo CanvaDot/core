@@ -1,7 +1,6 @@
 use actix_web::body::MessageBody;
-use actix_web::test::{call_service, init_service, TestRequest};
-use actix_web::{test, App};
-
+use actix_web::test::{TestRequest, call_service, init_service};
+use actix_web::{App, test};
 use backend::routes::test_route::test_route;
 
 #[test]
@@ -10,9 +9,14 @@ async fn test_route_test() {
     let req = TestRequest::default().to_request();
     let resp = call_service(&app, req).await;
 
-    assert_eq!(resp.status().as_u16(), 200u16);
+    assert_eq!(
+        resp.status()
+            .as_u16(),
+        200u16
+    );
 
-    let body_bytes = resp.into_body()
+    let body_bytes = resp
+        .into_body()
         .try_into_bytes()
         .expect("Body to be bytes.")
         .into_iter()

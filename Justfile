@@ -1,5 +1,8 @@
 set dotenv-load
 
+hide_stderr := if env("DEBUG", "0") == "1" { "" } else { "2>/dev/null" }
+# hide_stdout := if env("DEBUG", "0") == "1" { "" } else { "1>/dev/null" }
+
 
 @default:
 	just --list;
@@ -59,7 +62,7 @@ set dotenv-load
 	set -e;
 
 	if [[ -z "{{ export_path }}" ]]; then
-		coverage=$(cargo llvm-cov --features no_coverage --all -- --nocapture --quiet 2>/dev/null \
+		coverage=$(cargo llvm-cov --features no_coverage --all -- --nocapture --quiet {{ hide_stderr }} \
 			| grep "^TOTAL" \
 			| awk '{print $10}');
 
@@ -70,7 +73,7 @@ set dotenv-load
 
 		echo "${coverage/%\%/ }";
 	else
-		cargo llvm-cov --lcov --features no_coverage --all > "{{ export_path }}" 2>/dev/null;
+		cargo llvm-cov --lcov --features no_coverage --all > "{{ export_path }}" {{ hide_stderr }};
 	fi
 
 

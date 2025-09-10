@@ -9,13 +9,11 @@ use ::{
     tracing_subscriber::fmt::layer as ts_layer,
     tracing_subscriber::{prelude::*, registry as ts_registry},
     tracing_web::MakeWebConsoleWriter,
-    yew::Renderer
+    yew::Renderer,
 };
 
 #[cfg(not(feature = "no_coverage"))]
-use crate::{
-    components::app::App
-};
+use crate::components::app::App;
 
 #[cfg(not(feature = "no_coverage"))]
 mod components;
@@ -37,8 +35,7 @@ fn main() {
         .init();
 
     info!("Starting Yew application");
-    Renderer::<App>::new()
-        .render();
+    Renderer::<App>::new().render();
 }
 
 #[cfg(feature = "no_coverage")]

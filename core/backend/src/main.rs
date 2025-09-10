@@ -4,10 +4,9 @@
 
 use std::io::Error as IoError;
 
-use actix_web::{main, App, HttpServer};
-use thiserror::Error;
-
+use actix_web::{App, HttpServer, main};
 use routes::test_route::test_route;
+use thiserror::Error;
 
 mod routes;
 
@@ -20,12 +19,10 @@ enum AppError {
 #[main]
 #[cfg(not(feature = "no_coverage"))]
 async fn main() -> Result<(), AppError> {
-    HttpServer::new(|| {
-        App::new().service(test_route)
-    })
-    .bind(("0.0.0.0", 8081))?
-    .run()
-    .await?;
+    HttpServer::new(|| App::new().service(test_route))
+        .bind(("0.0.0.0", 8081))?
+        .run()
+        .await?;
 
     Ok(())
 }

@@ -49,7 +49,7 @@ jobs:
 
       - name: Fail If Coverage Is Below 80%
         run: |
-          coverage=$(just coverage);
+          coverage=$(DEBUG="${{ runner.debug }}" just coverage );
           coverage=${coverage//[[:space:]]};
           coverage=${coverage%.*};
           if (( coverage < 80 )); then

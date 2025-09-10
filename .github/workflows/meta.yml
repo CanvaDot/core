@@ -49,6 +49,5 @@ jobs:
         run: |
           if [[ -f "./codecov.yml" ]]; then
             curl -f -X POST --data-binary @codecov.yml https://codecov.io/validate \
-            || echo "The 'codecov.yml' file validation was not successful."
-            && exit 1;
+            || { echo "The 'codecov.yml' file validation was not successful."; exit 1; }
           fi

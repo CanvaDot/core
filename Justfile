@@ -62,7 +62,7 @@ hide_stderr := if env("DEBUG", "0") == "1" { "" } else { "2>/dev/null" }
 	set -e;
 
 	if [[ -z "{{ export_path }}" ]]; then
-		coverage=$(cargo llvm-cov --features no_coverage --all -- --nocapture --quiet {{ hide_stderr }} \
+		coverage=$(cargo llvm-cov --features coverage --all -- --nocapture --quiet {{ hide_stderr }} \
 			| grep "^TOTAL" \
 			| awk '{print $10}');
 
@@ -73,7 +73,7 @@ hide_stderr := if env("DEBUG", "0") == "1" { "" } else { "2>/dev/null" }
 
 		echo "${coverage/%\%/ }";
 	else
-		cargo llvm-cov --lcov --features no_coverage --all > "{{ export_path }}" {{ hide_stderr }};
+		cargo llvm-cov --lcov --features coverage --all > "{{ export_path }}" {{ hide_stderr }};
 	fi
 
 

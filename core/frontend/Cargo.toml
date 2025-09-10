@@ -19,4 +19,4 @@ web-sys = "0.3.78"
 
 [features]
 default = []
-no_coverage = []
+coverage = []

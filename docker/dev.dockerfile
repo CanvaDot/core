@@ -11,6 +11,10 @@ ENV DEBIAN_FRONTEND=nointeractive
 
 RUN useradd -m dev
 WORKDIR /home/dev/canvadot
+
+RUN mkdir target dist
+RUN chown -R dev:dev .
+
 USER dev
 
 ENV PATH="/home/dev/.cargo/bin:$PATH"

@@ -33,18 +33,17 @@ jobs:
 
 
       - name: Check Code Coverage
-        if: success() && github.ref == 'refs/heads/main'
         run: just coverage "./coverage.lcov";
 
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v5
-        if: success() && github.ref == 'refs/heads/main'
         with:
-          file: coverage.lcov
+          files: "coverage.lcov"
           fail_ci_if_error: true
           slug: "CanvaDot/core"
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
 
       - name: Fail If Coverage Is Below 80%

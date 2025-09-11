@@ -7,7 +7,7 @@ use std::io::Error as IoError;
 
 #[cfg(not(feature = "coverage"))]
 use ::{
-    actix_web::{App, HttpServer, main}, 
+    actix_web::{App, HttpServer, main},
     thiserror::Error
 };
 

@@ -5,5 +5,12 @@ services:
       dockerfile: dev.dockerfile
     volumes:
       - ../:/home/dev/canvadot
+      - cargo-target:/home/dev/canvadot/target
+      - cargo-dist:/home/dev/canvadot/dist
     ports:
       - 8080:8080
+
+
+volumes:
+  cargo-target:
+  cargo-dist:

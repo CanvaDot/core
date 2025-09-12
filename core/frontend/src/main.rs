@@ -4,7 +4,7 @@
 
 #[cfg(not(feature = "coverage"))]
 use ::{
-    tracing::{info, Level as TracingLevel},
+    tracing::Level as TracingLevel,
     tracing_subscriber::filter::Targets,
     tracing_subscriber::fmt::layer as ts_layer,
     tracing_subscriber::{prelude::*, registry as ts_registry},
@@ -13,15 +13,20 @@ use ::{
 };
 
 #[cfg(not(feature = "coverage"))]
-use crate::components::app::App;
+use crate::app::App;
+
 
 #[cfg(not(feature = "coverage"))]
 mod components;
+#[cfg(not(feature = "coverage"))]
+mod app;
+mod utils;
+
 
 #[cfg(not(feature = "coverage"))]
 fn main() {
     let fmt_layer = ts_layer()
-        .with_ansi(true)
+        .with_ansi(false)
         .without_time()
         .with_writer(MakeWebConsoleWriter::new())
         .with_filter(
@@ -34,7 +39,6 @@ fn main() {
         .with(fmt_layer)
         .init();
 
-    info!("Starting Yew application");
     Renderer::<App>::new().render();
 }
 

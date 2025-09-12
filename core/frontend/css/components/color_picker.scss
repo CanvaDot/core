@@ -1,0 +1,121 @@
+
+.color-picker-container {
+  display: flex;
+
+  background-color: #f8f8f8;
+
+  height: 50px;
+  width: 440px;
+
+  flex-direction: row;
+  gap: 5%;
+
+  border-radius: 8px;
+
+  padding: 8px 12px;
+
+  box-shadow: 5px 5px 5px 5px #D3D3D3;
+
+  background-color: #FAFAFA;
+}
+
+.color-picker-container > * {
+  position: relative;
+}
+
+.color-picker-container > *:not(:last-child)::after {
+  position: absolute;
+
+  content: "";
+
+  top: 10%;
+  left: 120%;
+
+  height: 80%;
+  width: 1px;
+
+  background-color: #D3D3D3;
+}
+
+
+.color-picker-paint {
+  width: 15%;
+
+  border: none;
+  border-radius: 8px;
+
+  color: white;
+
+  transition: filter 0.2s;
+}
+
+.color-picker-paint:hover {
+  filter: brightness(90%);
+}
+
+.color-picker-paint > svg {
+  transform: scale(90%)
+}
+
+
+.color-picker-selector {
+  position: relative;
+
+  overflow: hidden;
+}
+
+.color-picker-selector::before {
+  position: absolute;
+  display: block;
+
+  content: "";
+
+  top: 50%;
+  left: -25%;
+
+  width: 150%;
+  height: 150%;
+
+  border-radius: 8px;
+
+  background-image: conic-gradient(
+    #FD004C,
+    #FE9000,
+    #FFF020,
+    #3EDF4B,
+    #3363FF,
+    #B102B7,
+    #FD004C
+  );
+
+  transform: translateY(-50%);
+
+  transition: transform 0.5s;
+}
+
+.color-picker-selector:hover::before {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+
+.color-picker-colors {
+  display: flex;
+
+  width: 100%;
+
+  gap: 10px;
+}
+
+.color-picker-colors > button {
+  border: none;
+  border-radius: 8px;
+
+  width: 100%;
+  height: 100%;
+
+  transition: filter 0.2s;
+}
+
+.color-picker-colors > button:hover {
+  filter: brightness(90%);
+}

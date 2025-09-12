@@ -1,53 +1,61 @@
-use serde_json::{to_string as to_json_string, Error as JsonError, from_str as json_from_str};
-use thiserror::Error;
-use web_sys::{window, Storage};
-use rgb::Rgb;
+use std::slice::Iter;
 
-pub type Color = Rgb<u8>;
+use palette::{FromColor, Hsv, Srgb};
+use thiserror::Error;
+use gloo::storage::{LocalStorage, Storage};
+use gloo::storage::errors::StorageError;
+
 
 #[derive(Error, Debug)]
 pub enum ColorMemoryError {
     #[error("The browser '{0:#}' global object is missing.")]
     MissingObject(String),
 
-    #[error("A JSON error occurred: {0:#}")]
-    JsonError(#[from] JsonError),
-
     #[error("Couldn't read or write to local storage.")]
-    LocalStorage
+    LocalStorage(#[from] StorageError)
 }
 
 pub struct ColorMemory {
     ls_key: String,
 
-    memory: Vec<Color>,
+    memory: Vec<Srgb<u8>>,
     max_size: usize,
 }
 
 impl ColorMemory {
-    fn local_storage() -> Result<Storage, ColorMemoryError> {
-        window()
-            .and_then(|window| window.local_storage().ok().flatten())
-            .ok_or_else(|| ColorMemoryError::MissingObject("window.localStorage".into()))
+    fn fill(memory: &mut Vec<Srgb<u8>>, max_size: usize) {
+        const HSV_SATURATION: f32 = 0.9;
+        const HSV_VALUE: f32 = 0.9;
+
+        if max_size <= memory.len() {
+            return;
+        }
+
+        let hue_step = 360.0 / max_size as f32;
+
+        for slot in memory.len()..max_size {
+            let hue = slot as f32 * hue_step;
+            let hsv = Hsv::new(hue, HSV_SATURATION, HSV_VALUE);
+            let rgb = Srgb::<f32>::from_color(hsv);
+            memory.push(rgb.into_format())
+        }
     }
 
     fn write(&self) -> Result<(), ColorMemoryError> {
-        Self::local_storage()?
-            .set_item(&self.ls_key, &*to_json_string(&self.memory)?)
-            .or(Err(ColorMemoryError::LocalStorage))?;
+        LocalStorage::set(&self.ls_key, &self.memory)?;
 
         Ok(())
     }
 
     pub fn from_ls(ls_key: String, max_size: usize) -> Result<Self, ColorMemoryError> {
-        let raw_memory = Self::local_storage()?
-            .get_item(&ls_key)
-            .or(Err(ColorMemoryError::LocalStorage))?;
+        let mut memory = LocalStorage::get::<Vec<Srgb<u8>>>(&ls_key)
+            .or_else(|error| match error {
+                StorageError::KeyNotFound(_) => Ok(Vec::with_capacity(max_size)),
+                error => Err(error)
+            })?;
 
-        let memory = raw_memory
-            .map(|array| json_from_str(&array))
-            .transpose()?
-            .unwrap_or_else(|| Vec::<Color>::with_capacity(max_size));
+        memory.truncate(max_size);
+        Self::fill(&mut memory, max_size);
 
         Ok(Self {
             ls_key,
@@ -59,15 +67,18 @@ impl ColorMemory {
 
     #[inline]
     pub fn new(ls_key: String, max_size: usize) -> Self {
+        let mut memory = Vec::with_capacity(max_size);
+        Self::fill(&mut memory, max_size);
+
         Self {
             ls_key,
 
-            memory: Vec::with_capacity(max_size),
+            memory,
             max_size
         }
     }
 
-    pub fn push(&mut self, color: Color) -> Result<(), ColorMemoryError> {
+    pub fn push(&mut self, color: Srgb<u8>) -> Result<(), ColorMemoryError> {
         self.memory.push(color);
 
         if self.memory.len() > self.max_size {
@@ -77,7 +88,28 @@ impl ColorMemory {
         self.write()
     }
 
-    pub fn get(&self, index: usize) -> Option<&Color> {
-        self.memory.get(index)
+    pub fn get(&self, index: usize) -> Result<Option<&Srgb<u8>>, ColorMemoryError> {
+        self.memory
+            .get(index)
+            .map(|color| {
+                LocalStorage::set(format!("{}_last_obtained", self.ls_key), color)?;
+                Ok(color)
+            })
+            .transpose()
+    }
+
+    pub fn last_obtained(&self) -> Result<Option<Srgb<u8>>, ColorMemoryError> {
+        Ok(
+            LocalStorage::get::<Srgb<u8>>(format!("{}_last_obtained", self.ls_key))
+                .map(|color| Some(color))
+                .or_else(|error| match error {
+                    StorageError::KeyNotFound(_) => Ok(None),
+                    error => Err(error)
+                })?
+        )
+    }
+
+    pub fn iter(&'_ self) -> Iter<'_, Srgb<u8>> {
+        self.memory.iter()
     }
 }

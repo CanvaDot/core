@@ -1,4 +1,5 @@
 use log::info;
+use palette::Srgb;
 use yew::prelude::*;
 
 use crate::components::color_picker::ColorPicker;
@@ -6,8 +7,8 @@ use crate::components::color_picker::ColorPicker;
 #[function_component(App)]
 pub fn app() -> Html {
     let on_draw = {
-        Callback::from(|color| {
-            info!("The color is: {}", color);
+        Callback::from(|color: Srgb<u8>| {
+            info!("The color is: {}, {}, {}", color.red, color.green, color.blue);
         })
     };
 

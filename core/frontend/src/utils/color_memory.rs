@@ -1,3 +1,5 @@
+#![allow(unused)] // Yew components don't account for usage.
+
 use std::slice::Iter;
 
 use palette::{FromColor, Hsv, Srgb};
@@ -15,6 +17,7 @@ pub enum ColorMemoryError {
     LocalStorage(#[from] StorageError)
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct ColorMemory {
     ls_key: String,
 
@@ -79,7 +82,9 @@ impl ColorMemory {
     }
 
     pub fn push(&mut self, color: Srgb<u8>) -> Result<(), ColorMemoryError> {
-        self.memory.push(color);
+        if !self.memory.contains(&color) {
+            self.memory.insert(0, color);
+        }
 
         if self.memory.len() > self.max_size {
             self.memory.pop();
@@ -88,25 +93,8 @@ impl ColorMemory {
         self.write()
     }
 
-    pub fn get(&self, index: usize) -> Result<Option<&Srgb<u8>>, ColorMemoryError> {
-        self.memory
-            .get(index)
-            .map(|color| {
-                LocalStorage::set(format!("{}_last_obtained", self.ls_key), color)?;
-                Ok(color)
-            })
-            .transpose()
-    }
-
-    pub fn last_obtained(&self) -> Result<Option<Srgb<u8>>, ColorMemoryError> {
-        Ok(
-            LocalStorage::get::<Srgb<u8>>(format!("{}_last_obtained", self.ls_key))
-                .map(|color| Some(color))
-                .or_else(|error| match error {
-                    StorageError::KeyNotFound(_) => Ok(None),
-                    error => Err(error)
-                })?
-        )
+    pub fn get(&self, index: usize) -> Option<&Srgb<u8>> {
+        self.memory.get(index)
     }
 
     pub fn iter(&'_ self) -> Iter<'_, Srgb<u8>> {

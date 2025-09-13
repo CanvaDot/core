@@ -1,6 +1,33 @@
 @use "components/color_picker.scss";
 
 body {
+  position: relative;
+
   padding: 0;
   margin: 0;
+
+  height: 100vh;
+  width: 100vw;
+}
+
+// default slider styles.
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+
+  outline: none;
+
+  &::-webkit-slider-runnable-track,
+  &::-moz-range-track,
+  &::-moz-range-progress {
+    background: transparent;
+  }
+}
+
+.global-color-picker {
+  position: absolute;
+
+  top: 100%;
+
+  transform: translate(20px, calc(-100% - 20px));
 }

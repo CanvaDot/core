@@ -1,40 +1,46 @@
 
+$background-color: #FAFAFA;
+$shadow: 5px 5px 5px 5px #D3D3D3;
+$border-radius: 8px;
+
+$menu-width: 440px;
+
 .color-picker-container {
   display: flex;
 
   background-color: #f8f8f8;
 
   height: 50px;
-  width: 440px;
+  width: $menu-width;
 
   flex-direction: row;
   gap: 5%;
 
-  border-radius: 8px;
+  border-radius: $border-radius;
 
   padding: 8px 12px;
 
-  box-shadow: 5px 5px 5px 5px #D3D3D3;
+  box-shadow: $shadow;
 
-  background-color: #FAFAFA;
-}
+  background-color: $background-color;
 
-.color-picker-container > * {
-  position: relative;
-}
+  & > * {
+    position: relative;
+  }
 
-.color-picker-container > *:not(:last-child)::after {
-  position: absolute;
+  & > *:is(.color-picker-after)::after {
+    position: absolute;
 
-  content: "";
+    content: "";
 
-  top: 10%;
-  left: 120%;
+    top: 10%;
+    left: 120%;
 
-  height: 80%;
-  width: 1px;
+    height: 80%;
+    width: 1px;
 
-  background-color: #D3D3D3;
+    background-color: #D3D3D3;
+  }
 }
 
 
@@ -58,13 +64,13 @@
 }
 
 
-.color-picker-selector {
+.color-picker-toggle-selector {
   position: relative;
 
   overflow: hidden;
 }
 
-.color-picker-selector::before {
+.color-picker-toggle-selector::before {
   position: absolute;
   display: block;
 
@@ -93,8 +99,95 @@
   transition: transform 0.5s;
 }
 
-.color-picker-selector:hover::before {
+.color-picker-toggle-selector:hover::before {
   transform: translateY(-50%) rotate(90deg);
+}
+
+
+.color-picker-selector {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  transform: translateY(-130%);
+
+  min-height: 30px;
+  width: $menu-width;
+
+  padding: 8px 12px;
+
+  box-shadow: $shadow;
+
+  border-radius: $border-radius;
+
+  background-color: $background-color;
+}
+
+
+.color-picker-selector-sliders {
+  display: flex;
+
+  gap: 10px;
+  flex-direction: column;
+
+  & > input {
+    border-radius: $border-radius;
+
+    @mixin thumb-style {
+      width: 10px;
+      height: 20px;
+
+      border-radius: 8px;
+      border: 2px #D3D3D3;
+
+      box-shadow: 2px 2px 2px 2px #D3D3D3;
+
+      background: white;
+    }
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+
+      @include thumb-style;
+    }
+
+    &::-moz-range-thumb {
+      @include thumb-style;
+    }
+  }
+
+  & > input:first-child {
+    background: linear-gradient(
+      to right,
+      red 0%,
+      yellow 16.66%,
+      lime 33.33%,
+      cyan 50%,
+      blue 66.66%,
+      magenta 83.33%,
+      red 100%
+    );
+
+    &::-moz-range-track {
+      // declared in src/components/color_picker.rs
+      filter: brightness(var(--brightness))
+    }
+
+    &::-webkit-slider-runnable-track {
+      // declared in src/components/color_picker.rs
+      filter: brightness(var(--brightness))
+    }
+  }
+
+  & > input:last-child {
+    background: linear-gradient(
+      to right,
+      black,
+      white
+    );
+  }
 }
 
 
@@ -104,18 +197,18 @@
   width: 100%;
 
   gap: 10px;
-}
 
-.color-picker-colors > button {
-  border: none;
-  border-radius: 8px;
+  & > button {
+    border: none;
+    border-radius: 8px;
 
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 
-  transition: filter 0.2s;
-}
+    transition: filter 0.2s;
+  }
 
-.color-picker-colors > button:hover {
-  filter: brightness(90%);
+  & > button:hover {
+    filter: brightness(90%);
+  }
 }

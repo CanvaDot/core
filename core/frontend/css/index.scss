@@ -1,4 +1,13 @@
 @use "components/color_picker.scss";
+@use "components/common.scss";
+@use "components/notification_hub.scss";
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+* {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+}
 
 body {
   position: relative;
@@ -30,4 +39,19 @@ input[type="range"] {
   top: 100%;
 
   transform: translate(20px, calc(-100% - 20px));
+}
+
+.global-notification-hub {
+  position: absolute;
+
+  top: 100%;
+  left: 100%;
+
+  height: 50%;
+  width: 30%;
+
+  min-height: 300px;
+  min-width: 250px;
+
+  transform: translate(calc(-100% - 20px), calc(-100% - 20px));
 }

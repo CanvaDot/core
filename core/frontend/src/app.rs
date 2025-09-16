@@ -36,10 +36,10 @@ pub fn app() -> Html {
                 ]}
                 on_change={|val| log::info!("{val}")}
                 default=3
-                enabled=false
+                enabled=true
             />
 
-            <NotificationHub app_context={app_context.clone()} />
+            <NotificationHub class="global-notification-hub" app_context={app_context.clone()} />
             <ColorPicker class="global-color-picker" on_draw={on_draw} />
         </ContextProvider<SharedAppContext>>
     }

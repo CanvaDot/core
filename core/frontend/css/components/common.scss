@@ -1,0 +1,94 @@
+
+$background-color: #E0E0E0;
+$border-radius: 8px;
+
+.common-button {
+  padding: 8px 18px;
+
+  border: none;
+  border-radius: $border-radius;
+
+  transition: filter 0.2s;
+
+  font-size: 13px;
+
+  user-select: none;
+
+  &:disabled {
+    filter: brightness(90%) contrast(90%);
+
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled) {
+    cursor: pointer;
+  }
+
+  &:not(:disabled):hover {
+    filter: brightness(90%)
+  }
+}
+
+.common-select {
+  position: relative;
+  display: flex;
+
+  padding: 8px 15px;
+
+  width: max-content;
+  height: max-content;
+
+  align-items: center;
+  justify-content: space-around;
+  gap: 5px;
+
+  font-size: 12px;
+
+  background-color: $background-color;
+
+  border-radius: $border-radius;
+
+  cursor: pointer;
+
+  user-select: none;
+
+  &-disabled {
+    filter: brightness(90%) contrast(80%);
+
+    cursor: not-allowed;
+  }
+
+  & > svg {
+    height: 12px;
+  }
+
+  & > div {
+    position: absolute;
+    display: flex;
+
+    flex-direction: column;
+
+    top: 110%;
+    left: 0;
+
+    width: 100%;
+
+    border-radius: $border-radius;
+
+    background-color: $background-color;
+
+    & > div {
+      transition: filter 0.2s;
+
+      border-radius: $border-radius;
+
+      background-color: $background-color;
+
+      padding: 8px 18px;
+
+      &:hover {
+        filter: brightness(80%)
+      }
+    }
+  }
+}

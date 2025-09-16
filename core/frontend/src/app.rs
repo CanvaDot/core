@@ -7,6 +7,7 @@ use yew::prelude::*;
 use crate::utils::notification_store::NotificationStore;
 use crate::components::color_picker::ColorPicker;
 use crate::components::notification_hub::NotificationHub;
+use crate::components::common::{AppButton, ButtonTarget, AppDropdown};
 
 pub type SharedAppContext = UseStateHandle<AppContext>;
 
@@ -27,8 +28,19 @@ pub fn app() -> Html {
 
     html! {
         <ContextProvider<SharedAppContext> context={app_context.clone()}>
+            <AppButton text="test" target={ButtonTarget::Link("/".into())} enabled=true />
+            <AppDropdown
+                items={vec![
+                    ("Literally", "lit"),
+                    ("Not Really", "no")
+                ]}
+                on_change={|val| log::info!("{val}")}
+                default=3
+                enabled=false
+            />
+
             <NotificationHub app_context={app_context.clone()} />
-            <ColorPicker classname="global-color-picker" on_draw={on_draw} />
+            <ColorPicker class="global-color-picker" on_draw={on_draw} />
         </ContextProvider<SharedAppContext>>
     }
 }

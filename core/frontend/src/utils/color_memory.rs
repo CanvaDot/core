@@ -1,5 +1,3 @@
-#![allow(unused)] // Yew components don't account for usage.
-
 use std::slice::Iter;
 
 use palette::{FromColor, Hsv, Srgb};

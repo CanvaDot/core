@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::rc::Rc;
 
 use yew::prelude::*;
 use log::error;
@@ -23,35 +24,46 @@ impl NotificationHandle {
     }
 }
 
-trait ResultReport<T, E: Error> {
-    fn or_notify(self, handle: &NotificationHandle) -> Self;
+pub trait ResultReport<T, E: Error> {
+    fn or_notify(self, handle: &NotificationHandle) -> T;
 }
 
 impl<T, E: Error> ResultReport<T, E> for Result<T, E> {
-    fn or_notify(self, handle: &NotificationHandle) -> Self {
-        if let Err(error) = &self {
-            handle.notify(
-                Notification::new("Error", format!("{error}"))
-                    .set_level(NotificationLevel::Error)
-                    .set_components(vec![
-                        NotificationComponent::RedirectButton {
-                            text: "Notify".into(),
-                            redirect: "/".into(),
-                            enabled: false,
-                            kind: NotificationComponentType::Primary
-                        }
-                    ])
-                    .clone()
-            );
-        }
+    fn or_notify(self, handle: &NotificationHandle) -> T {
+        match self {
+            Ok(value) => value,
 
-        self
+            Err(error) => {
+                handle.notify(
+                    Notification::new("Error", format!("{error}"))
+                        .set_level(NotificationLevel::Error)
+                        .set_components(vec![
+                            NotificationComponent::RedirectButton {
+                                text: "Notify".into(),
+                                redirect: "/".into(),
+                                enabled: false,
+                                kind: NotificationComponentType::Primary
+                            }
+                        ])
+                        .clone()
+                );
+
+                panic!(
+                    concat!(
+                        "An application error occurred, ",
+                        "the error has been notified to the user ",
+                        "\n{:#}"
+                    ),
+                    error
+                );
+            }
+        }
     }
 }
 
 #[hook]
-pub fn use_notifications() -> NotificationHandle {
+pub fn use_notifications() -> Rc<NotificationHandle> {
     let context = use_context::<SharedAppContext>();
 
-    NotificationHandle { state_handle: context }
+    Rc::new(NotificationHandle { state_handle: context })
 }

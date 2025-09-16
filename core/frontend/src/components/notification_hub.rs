@@ -3,10 +3,9 @@ use std::time::{Duration, Instant};
 use yew::prelude::*;
 
 use crate::app::SharedAppContext;
-use crate::utils::notification_store::{Notification, NotificationComponent, NotificationLevel};
+use crate::utils::notification_store::{NotificationComponent, NotificationLevel};
 
 // TODO: make notification components, expiry and all
-// TODO: make common components such as buttons, inputs...
 
 #[derive(Properties, PartialEq)]
 pub struct NotificationProps {
@@ -33,8 +32,20 @@ pub struct NotificationHubProps {
 
 #[function_component(NotificationElement)]
 fn notification_element(props: &NotificationProps) -> Html {
-    return html! {
+    let (buttons, dropdowns): (Vec<_>, Vec<_>) = props.components
+        .iter()
+        .partition(|component| match component {
+            | NotificationComponent::RedirectButton { .. }
+            | NotificationComponent::ActionButton { .. } => true,
 
+            NotificationComponent::DropDown { .. } => false
+        });
+
+    return html! {
+        <div>
+            <span>{&props.title}</span>
+            <p>{&props.message}</p>
+        </div>
     }
 }
 

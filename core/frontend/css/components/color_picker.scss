@@ -1,5 +1,5 @@
 
-$background-color: #FAFAFA;
+$background-color: #F8F8F8;
 $shadow: 5px 5px 5px 5px #D3D3D3;
 $border-radius: 8px;
 
@@ -8,7 +8,7 @@ $menu-width: 440px;
 .color-picker-container {
   display: flex;
 
-  background-color: #f8f8f8;
+  background-color: $background-color;
 
   height: 50px;
   width: $menu-width;
@@ -22,7 +22,6 @@ $menu-width: 440px;
 
   box-shadow: $shadow;
 
-  background-color: $background-color;
 
   & > * {
     position: relative;
@@ -107,6 +106,8 @@ $menu-width: 440px;
 .color-picker-selector {
   position: absolute;
 
+  background-color: $background-color;
+
   top: 0;
   left: 0;
 
@@ -120,8 +121,6 @@ $menu-width: 440px;
   box-shadow: $shadow;
 
   border-radius: $border-radius;
-
-  background-color: $background-color;
 }
 
 

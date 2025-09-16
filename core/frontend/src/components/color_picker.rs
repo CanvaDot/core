@@ -1,20 +1,30 @@
 use gloo::storage::{errors::StorageError, LocalStorage, Storage};
-use palette::{rgb::channels::Rgba, FromColor, Hsl, Srgb};
+use palette::{rgb::channels::Rgba, Srgb};
+use thiserror::Error;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
-use log::info;
 
-use crate::utils::{color_memory::ColorMemory, rgb_utils::{compose, decompose}};
+use crate::components::hooks::notifications::{use_notifications, ResultReport};
+use crate::utils::{color_memory::ColorMemory};
+use crate::utils::colors::{compose, decompose};
+
 
 const MAX_LAST_COLORS: usize = 5;
 const COLOR_MEMORY_KEY: &str = "color_memory";
 const LAST_COLOR_KEY: &str = "last_color";
 
+
+#[derive(Error, Debug)]
+enum ColorPickerError {
+    #[error("Couldn't cast the event target.")]
+    DynCastError
+}
+
 #[derive(Properties, PartialEq)]
 pub struct ColorPickerProps {
     #[prop_or_default]
-    pub classname: String,
+    pub class: String,
 
     #[prop_or_default]
     pub on_draw: Callback<Srgb<u8>>,
@@ -22,16 +32,18 @@ pub struct ColorPickerProps {
 
 #[function_component(ColorPicker)]
 pub fn color_picker(props: &ColorPickerProps) -> Html {
+    let notification_hub = use_notifications();
+
     let color_memory = use_state(||
         ColorMemory::from_ls(COLOR_MEMORY_KEY.into(), MAX_LAST_COLORS)
-            .expect("Color memory to not have an error, errors this way should be removed.")
+            .or_notify(&notification_hub)
     );
     let current_color = use_state(|| LocalStorage::get(LAST_COLOR_KEY)
         .or_else(|error| match error {
             StorageError::KeyNotFound(_) => Ok(None),
             error => Err(error)
         })
-        .expect("To be able to retrieve last color, errors this way should be removed.")
+        .or_notify(&notification_hub)
         .unwrap_or(Srgb::new(0, 105, 255))
     );
     let picker_expanded = use_state(|| !false);
@@ -48,19 +60,20 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
     let change_color_event = |color: Srgb<u8>| {
         let current_color = current_color.clone();
         let color_memory = color_memory.clone();
+        let notification_hub = notification_hub.clone();
 
         Callback::from(move |_| {
             let mut new_memory = (*color_memory).clone();
 
             new_memory.push(*current_color)
-                .expect("Current color to be pushed, errors must be removed this way.");
+                .or_notify(&notification_hub);
 
             color_memory.set(new_memory);
             current_color.set(color);
         })
     };
 
-    let (hue, lightness) = decompose(*current_color);
+    let (hue, lightness) = decompose(&*current_color);
 
     #[derive(Clone, Copy)]
     enum ChangeSliderType {
@@ -71,10 +84,12 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
     let change_slider_event = |ty: ChangeSliderType| {
         let current_color = current_color.clone();
         let color_memory = color_memory.clone();
+        let notification_hub = notification_hub.clone();
 
         Callback::from(move |event: Event| {
             let value = event.target_dyn_into::<HtmlInputElement>()
-                .expect("Event to have a target, errors must be removed this way.")
+                .ok_or(ColorPickerError::DynCastError)
+                .or_notify(&notification_hub)
                 .value_as_number();
 
             let new_color = match ty {
@@ -83,11 +98,11 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
             };
 
             LocalStorage::set(LAST_COLOR_KEY, new_color)
-                .expect("Local storage to write the value, errors this way must be removed.");
+                .or_notify(&notification_hub);
 
             let mut new_memory = (*color_memory).clone();
             new_memory.push(*current_color)
-                .expect("Current color to be pushed, errors must be removed this way.");
+                .or_notify(&notification_hub);
             color_memory.set(new_memory);
 
             current_color.set(new_color);
@@ -103,7 +118,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
     };
 
     html! {
-        <div class={classes!(&props.classname, "color-picker-container")}>
+        <div class={classes!(&props.class, "color-picker-container")}>
             if *picker_expanded {
                 <div class="color-picker-selector">
                     <div class="color-picker-selector-values">

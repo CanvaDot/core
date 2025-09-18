@@ -1,26 +1,32 @@
 use std::error::Error;
 use std::rc::Rc;
 
-use yew::prelude::*;
 use log::error;
+use yew::prelude::*;
 
 use crate::app::SharedAppContext;
-use crate::utils::notification_store::{Notification, NotificationComponent, NotificationLevel, NotificationComponentType};
+use crate::utils::notification_store::{
+    Notification,
+    NotificationComponent,
+    NotificationComponentType,
+    NotificationLevel,
+};
 
 pub struct NotificationHandle {
-    state_handle: Option<SharedAppContext>
+    state_handle: Option<SharedAppContext>,
 }
 
 impl NotificationHandle {
     pub fn notify(&self, notification: Notification) {
-        let Some(state_handle) = &self.state_handle
-        else {
+        let Some(state_handle) = &self.state_handle else {
             // XXX: Report this.
             error!("Couldn't notify, SharedAppContext was not found.");
             return;
         };
 
-        state_handle.notifications.add(notification);
+        state_handle
+            .notifications
+            .add(notification);
     }
 }
 
@@ -37,15 +43,13 @@ impl<T, E: Error> ResultReport<T, E> for Result<T, E> {
                 handle.notify(
                     Notification::new("Error", format!("{error}"))
                         .set_level(NotificationLevel::Error)
-                        .set_components(vec![
-                            NotificationComponent::RedirectButton {
-                                text: "Notify".into(),
-                                redirect: "/".into(),
-                                enabled: false,
-                                kind: NotificationComponentType::Primary
-                            }
-                        ])
-                        .clone()
+                        .set_components(vec![NotificationComponent::RedirectButton {
+                            text: "Notify".into(),
+                            redirect: "/".into(),
+                            enabled: false,
+                            kind: NotificationComponentType::Primary,
+                        }])
+                        .clone(),
                 );
 
                 panic!(
@@ -56,7 +60,7 @@ impl<T, E: Error> ResultReport<T, E> for Result<T, E> {
                     ),
                     error
                 );
-            }
+            },
         }
     }
 }

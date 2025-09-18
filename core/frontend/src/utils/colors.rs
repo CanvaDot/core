@@ -8,8 +8,14 @@ pub static SECONDARY_GREY: Srgb<u8> = Srgb::new(153, 153, 153);
 pub fn decompose(rgb: &Srgb<u8>) -> (u16, u8) {
     let rgb_f: Srgb<f32> = rgb.into_format();
 
-    let max = rgb_f.red.max(rgb_f.green).max(rgb_f.blue);
-    let min = rgb_f.red.min(rgb_f.green).min(rgb_f.blue);
+    let max = rgb_f
+        .red
+        .max(rgb_f.green)
+        .max(rgb_f.blue);
+    let min = rgb_f
+        .red
+        .min(rgb_f.green)
+        .min(rgb_f.blue);
     let delta = max - min;
 
     let hue = if delta == 0.0 {

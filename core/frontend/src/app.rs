@@ -4,16 +4,16 @@ use log::info;
 use palette::Srgb;
 use yew::prelude::*;
 
-use crate::utils::notification_store::NotificationStore;
 use crate::components::color_picker::ColorPicker;
+use crate::components::common::{AppButton, AppDropdown, ButtonTarget};
 use crate::components::notification_hub::NotificationHub;
-use crate::components::common::{AppButton, ButtonTarget, AppDropdown};
+use crate::utils::notifications::store::NotificationStore;
 
-pub type SharedAppContext = UseStateHandle<AppContext>;
+pub type SharedAppContext<'c> = UseStateHandle<AppContext<'c>>;
 
 #[derive(Default, Clone, PartialEq)]
-pub struct AppContext {
-    pub notifications: Rc<NotificationStore>
+pub struct AppContext<'c> {
+    pub notifications: Rc<NotificationStore<'c>>,
 }
 
 #[function_component(App)]

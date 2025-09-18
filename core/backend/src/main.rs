@@ -8,9 +8,8 @@ use std::io::Error as IoError;
 #[cfg(not(feature = "coverage"))]
 use ::{
     actix_web::{App, HttpServer, main},
-    thiserror::Error
+    thiserror::Error,
 };
-
 #[cfg(not(feature = "coverage"))]
 use routes::test_route::test_route;
 

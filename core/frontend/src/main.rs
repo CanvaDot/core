@@ -15,13 +15,11 @@ use ::{
 #[cfg(not(feature = "coverage"))]
 use crate::app::App;
 
-
-#[cfg(not(feature = "coverage"))]
-mod components;
 #[cfg(not(feature = "coverage"))]
 mod app;
+#[cfg(not(feature = "coverage"))]
+mod components;
 mod utils;
-
 
 #[cfg(not(feature = "coverage"))]
 fn main() {

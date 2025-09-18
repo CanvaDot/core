@@ -1,17 +1,17 @@
 use std::cmp::min;
 
 use gloo::utils::window;
+use palette::rgb::channels::Rgba;
+use palette::Srgb;
 use yew::prelude::*;
-use palette::{rgb::channels::Rgba, Srgb};
 use yew_icons::{Icon, IconId};
 
 use crate::utils::colors::{contrasting_bw, INFO_BLUE};
 
-
 #[derive(PartialEq, Clone)]
 pub enum ButtonTarget {
     Callback(Callback<MouseEvent>),
-    Link(String)
+    Link(String),
 }
 
 #[derive(Properties, PartialEq)]
@@ -22,33 +22,32 @@ pub struct ButtonProps {
     pub color: Srgb<u8>,
     #[prop_or(true)]
     pub enabled: bool,
-    
 
     #[prop_or_default]
     class: String,
     #[prop_or_default]
     id: String,
     #[prop_or_default]
-    style: String
+    style: String,
 }
 
 #[function_component(AppButton)]
 pub fn app_button(props: &ButtonProps) -> Html {
     let on_click = {
-        let target = props.target.clone();
-        Callback::from(move |event| {
-            match &target {
-                ButtonTarget::Callback(callback) => {
-                    callback.emit(event);
-                }
+        let target = props
+            .target
+            .clone();
+        Callback::from(move |event| match &target {
+            ButtonTarget::Callback(callback) => {
+                callback.emit(event);
+            },
 
-                ButtonTarget::Link(link) => {
-                    window()
-                        .location()
-                        .set_href(&link)
-                        .expect("To redirect.");
-                }
-            }
+            ButtonTarget::Link(link) => {
+                window()
+                    .location()
+                    .set_href(&link)
+                    .expect("To redirect.");
+            },
         })
     };
 
@@ -76,7 +75,6 @@ pub fn app_button(props: &ButtonProps) -> Html {
     }
 }
 
-
 #[derive(Properties, PartialEq)]
 pub struct DropdownProps<'i> {
     #[prop_or(0)]
@@ -92,21 +90,30 @@ pub struct DropdownProps<'i> {
     #[prop_or_default]
     id: String,
     #[prop_or_default]
-    style: String
+    style: String,
 }
 
 #[function_component(AppDropdown)]
 pub fn app_dropdown(props: &DropdownProps<'static>) -> Html {
-    let selected_key = use_state(||
-        props.items
-            .get(min(props.items.len() - 1, props.default))
+    let selected_key = use_state(|| {
+        props
+            .items
+            .get(min(
+                props
+                    .items
+                    .len()
+                    - 1,
+                props.default,
+            ))
             .map(|(key, _)| key.to_string())
             .unwrap_or(String::new())
-    );
+    });
     let expanded = use_state(|| false);
 
     let on_click = |key: String, value: String| {
-        let callback = props.on_change.clone();
+        let callback = props
+            .on_change
+            .clone();
         let selected_key = selected_key.clone();
 
         Callback::from(move |_| {
@@ -123,17 +130,20 @@ pub fn app_dropdown(props: &DropdownProps<'static>) -> Html {
         })
     };
 
-    let options = props.items
+    let options = props
+        .items
         .iter()
-        .map(|(key, value)| html! {
-            <div
-                onclick={on_click(
-                    key.to_string(),
-                    value.to_string()
-                )}
-            >
-                <span>{key}</span>
-            </div>
+        .map(|(key, value)| {
+            html! {
+                <div
+                    onclick={on_click(
+                        key.to_string(),
+                        value.to_string()
+                    )}
+                >
+                    <span>{key}</span>
+                </div>
+            }
         });
 
     html! {

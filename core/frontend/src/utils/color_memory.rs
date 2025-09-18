@@ -1,10 +1,9 @@
 use std::slice::Iter;
 
+use gloo::storage::errors::StorageError;
+use gloo::storage::{LocalStorage, Storage};
 use palette::{FromColor, Hsv, Srgb};
 use thiserror::Error;
-use gloo::storage::{LocalStorage, Storage};
-use gloo::storage::errors::StorageError;
-
 
 #[derive(Error, Debug)]
 pub enum ColorMemoryError {
@@ -12,7 +11,7 @@ pub enum ColorMemoryError {
     MissingObject(String),
 
     #[error("Couldn't read or write to local storage.")]
-    LocalStorage(#[from] StorageError)
+    LocalStorage(#[from] StorageError),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -49,21 +48,16 @@ impl ColorMemory {
     }
 
     pub fn from_ls(ls_key: String, max_size: usize) -> Result<Self, ColorMemoryError> {
-        let mut memory = LocalStorage::get::<Vec<Srgb<u8>>>(&ls_key)
-            .or_else(|error| match error {
+        let mut memory =
+            LocalStorage::get::<Vec<Srgb<u8>>>(&ls_key).or_else(|error| match error {
                 StorageError::KeyNotFound(_) => Ok(Vec::with_capacity(max_size)),
-                error => Err(error)
+                error => Err(error),
             })?;
 
         memory.truncate(max_size);
         Self::fill(&mut memory, max_size);
 
-        Ok(Self {
-            ls_key,
-
-            memory,
-            max_size
-        })
+        Ok(Self { ls_key, memory, max_size })
     }
 
     #[inline]
@@ -71,31 +65,37 @@ impl ColorMemory {
         let mut memory = Vec::with_capacity(max_size);
         Self::fill(&mut memory, max_size);
 
-        Self {
-            ls_key,
-
-            memory,
-            max_size
-        }
+        Self { ls_key, memory, max_size }
     }
 
     pub fn push(&mut self, color: Srgb<u8>) -> Result<(), ColorMemoryError> {
-        if !self.memory.contains(&color) {
-            self.memory.insert(0, color);
+        if !self
+            .memory
+            .contains(&color)
+        {
+            self.memory
+                .insert(0, color);
         }
 
-        if self.memory.len() > self.max_size {
-            self.memory.pop();
+        if self
+            .memory
+            .len()
+            > self.max_size
+        {
+            self.memory
+                .pop();
         }
 
         self.write()
     }
 
     pub fn get(&self, index: usize) -> Option<&Srgb<u8>> {
-        self.memory.get(index)
+        self.memory
+            .get(index)
     }
 
     pub fn iter(&'_ self) -> Iter<'_, Srgb<u8>> {
-        self.memory.iter()
+        self.memory
+            .iter()
     }
 }

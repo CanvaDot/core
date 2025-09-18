@@ -1,4 +1,88 @@
+$background-color: #F8F8F8;
+$shadow: 5px 5px 5px 5px #D3D3D3;
+$border-radius: 8px;
 
 .notification-hub {
+  display: flex;
+
   pointer-events: none;
+  user-select: none;
+
+  height: 400px;
+  width: 300px;
+
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.notification-element {
+  pointer-events: auto;
+
+  position: relative;
+  display: flex;
+
+  overflow: hidden;
+
+  background-color: $background-color;
+
+  border-radius: $border-radius;
+
+  box-shadow: $shadow;
+
+  padding: 5px 20px;
+
+  width: calc(100% - 40px);
+  min-height: 55px;
+
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+
+  &::before {
+    content: "";
+
+    position: absolute;
+
+    height: 100%;
+    width: 4%;
+
+    left: 0;
+    top: 0;
+
+    background-color: var(--accent-color);
+  }
+
+  & > * {
+    margin: 0;
+  }
+
+  & > svg {
+    position: absolute;
+
+    top: calc(10% - 20px);
+    left: calc(90% - 20px);
+
+    height: 10px;
+
+    padding: 20px 20px;
+
+    color: #303030;
+
+    transition: color 0.2s;
+
+    &:hover {
+      color: red;
+    }
+  }
+
+  & > h1 {
+    font-size: 0.9em;
+    font-weight: bold;
+  }
+
+  & > p {
+    font-size: 0.8em;
+
+    color: #303030;
+  }
 }

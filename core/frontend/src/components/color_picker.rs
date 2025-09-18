@@ -1,24 +1,24 @@
-use gloo::storage::{errors::StorageError, LocalStorage, Storage};
-use palette::{rgb::channels::Rgba, Srgb};
+use gloo::storage::errors::StorageError;
+use gloo::storage::{LocalStorage, Storage};
+use palette::rgb::channels::Rgba;
+use palette::Srgb;
 use thiserror::Error;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
 use crate::components::hooks::notifications::{use_notifications, ResultReport};
-use crate::utils::{color_memory::ColorMemory};
+use crate::utils::color_memory::ColorMemory;
 use crate::utils::colors::{compose, decompose};
-
 
 const MAX_LAST_COLORS: usize = 5;
 const COLOR_MEMORY_KEY: &str = "color_memory";
 const LAST_COLOR_KEY: &str = "last_color";
 
-
 #[derive(Error, Debug)]
 enum ColorPickerError {
     #[error("Couldn't cast the event target.")]
-    DynCastError
+    DynCastError,
 }
 
 #[derive(Properties, PartialEq)]
@@ -34,23 +34,25 @@ pub struct ColorPickerProps {
 pub fn color_picker(props: &ColorPickerProps) -> Html {
     let notification_hub = use_notifications();
 
-    let color_memory = use_state(||
-        ColorMemory::from_ls(COLOR_MEMORY_KEY.into(), MAX_LAST_COLORS)
+    let color_memory = use_state(|| {
+        ColorMemory::from_ls(COLOR_MEMORY_KEY.into(), MAX_LAST_COLORS).or_notify(&notification_hub)
+    });
+    let current_color = use_state(|| {
+        LocalStorage::get(LAST_COLOR_KEY)
+            .or_else(|error| match error {
+                StorageError::KeyNotFound(_) => Ok(None),
+                error => Err(error),
+            })
             .or_notify(&notification_hub)
-    );
-    let current_color = use_state(|| LocalStorage::get(LAST_COLOR_KEY)
-        .or_else(|error| match error {
-            StorageError::KeyNotFound(_) => Ok(None),
-            error => Err(error)
-        })
-        .or_notify(&notification_hub)
-        .unwrap_or(Srgb::new(0, 105, 255))
-    );
+            .unwrap_or(Srgb::new(0, 105, 255))
+    });
     let picker_expanded = use_state(|| !false);
 
     let on_draw_event = {
         let current_color = current_color.clone();
-        let on_draw = props.on_draw.clone();
+        let on_draw = props
+            .on_draw
+            .clone();
 
         Callback::from(move |_| {
             on_draw.emit(*current_color);
@@ -65,7 +67,8 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         Callback::from(move |_| {
             let mut new_memory = (*color_memory).clone();
 
-            new_memory.push(*current_color)
+            new_memory
+                .push(*current_color)
                 .or_notify(&notification_hub);
 
             color_memory.set(new_memory);
@@ -78,7 +81,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
     #[derive(Clone, Copy)]
     enum ChangeSliderType {
         Brightness,
-        Hue
+        Hue,
     }
 
     let change_slider_event = |ty: ChangeSliderType| {
@@ -87,7 +90,8 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         let notification_hub = notification_hub.clone();
 
         Callback::from(move |event: Event| {
-            let value = event.target_dyn_into::<HtmlInputElement>()
+            let value = event
+                .target_dyn_into::<HtmlInputElement>()
                 .ok_or(ColorPickerError::DynCastError)
                 .or_notify(&notification_hub)
                 .value_as_number();
@@ -97,11 +101,11 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                 ChangeSliderType::Hue => compose(value as u16, lightness),
             };
 
-            LocalStorage::set(LAST_COLOR_KEY, new_color)
-                .or_notify(&notification_hub);
+            LocalStorage::set(LAST_COLOR_KEY, new_color).or_notify(&notification_hub);
 
             let mut new_memory = (*color_memory).clone();
-            new_memory.push(*current_color)
+            new_memory
+                .push(*current_color)
                 .or_notify(&notification_hub);
             color_memory.set(new_memory);
 

@@ -9,11 +9,11 @@ use crate::components::common::{AppButton, AppDropdown, ButtonTarget};
 use crate::components::notification_hub::NotificationHub;
 use crate::utils::notifications::store::NotificationStore;
 
-pub type SharedAppContext<'c> = UseStateHandle<AppContext<'c>>;
+pub type SharedAppContext = UseStateHandle<AppContext>;
 
 #[derive(Default, Clone, PartialEq)]
-pub struct AppContext<'c> {
-    pub notifications: Rc<NotificationStore<'c>>,
+pub struct AppContext {
+    pub notifications: Rc<NotificationStore>,
 }
 
 #[function_component(App)]

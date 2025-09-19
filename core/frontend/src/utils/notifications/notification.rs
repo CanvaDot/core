@@ -19,11 +19,13 @@ pub enum NotificationLevel {
 }
 
 #[derive(Builder, Clone, PartialEq, Debug)]
-pub struct Notification<'c> {
+pub struct Notification {
     #[builder(field)]
-    components: Vec<NotificationComponent<'c>>,
+    components: Vec<NotificationComponent>,
 
+    #[builder(into)]
     title: String,
+    #[builder(into)]
     message: String,
     #[builder(default = NotificationLevel::Info)]
     level: NotificationLevel,
@@ -34,9 +36,9 @@ pub struct Notification<'c> {
     duration: Duration,
 }
 
-impl<'c> Notification<'c> {
+impl Notification {
     #[inline]
-    pub fn components(&'c self) -> &'c [NotificationComponent<'c>] {
+    pub fn components(&self) -> &[NotificationComponent] {
         &self.components
     }
 
@@ -83,20 +85,20 @@ impl NotificationLevel {
     }
 }
 
-impl<'c, S: notification_builder::State> NotificationBuilder<'c, S> {
+impl<S: notification_builder::State> NotificationBuilder<S> {
     pub fn add_redirect_button(mut self, button: RedirectButton) -> Self {
         self.components
             .push(button.into());
         self
     }
 
-    pub fn add_action_button(mut self, button: ActionButton<'c>) -> Self {
+    pub fn add_action_button(mut self, button: ActionButton) -> Self {
         self.components
             .push(button.into());
         self
     }
 
-    pub fn add_dropdown(mut self, dropdown: DropDown<'c>) -> Self {
+    pub fn add_dropdown(mut self, dropdown: DropDown) -> Self {
         self.components
             .push(dropdown.into());
         self

@@ -11,12 +11,12 @@ use crate::utils::colors::{ERROR_RED, INFO_BLUE, SUCCESS_GREEN};
 use crate::utils::notifications::notification::Notification;
 
 #[derive(Default, PartialEq)]
-pub struct NotificationStore<'c> {
-    notifications: Rc<RefCell<Vec<Notification<'c>>>>,
+pub struct NotificationStore {
+    notifications: Rc<RefCell<Vec<Notification>>>,
 }
 
-impl<'c> NotificationStore<'c> {
-    pub fn add(&self, notification: Notification<'c>) {
+impl NotificationStore {
+    pub fn add(&self, notification: Notification) {
         self.notifications
             .borrow_mut()
             .push(notification)
@@ -28,7 +28,7 @@ impl<'c> NotificationStore<'c> {
             .retain(|notification| !notification.is_expired());
     }
 
-    pub fn all(&self) -> Rc<RefCell<Vec<Notification<'c>>>> {
+    pub fn all(&self) -> Rc<RefCell<Vec<Notification>>> {
         self.notifications
             .clone()
     }

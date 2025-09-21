@@ -15,7 +15,7 @@ $border-radius: 8px;
   justify-content: flex-end;
 }
 
-.notification-element {
+.notification {
   pointer-events: auto;
 
   position: relative;
@@ -29,14 +29,14 @@ $border-radius: 8px;
 
   box-shadow: $shadow;
 
-  padding: 5px 20px;
+  padding: 10px 20px;
 
   width: calc(100% - 40px);
   min-height: 55px;
 
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
+  gap: 10px;
 
   &::before {
     content: "";
@@ -59,30 +59,62 @@ $border-radius: 8px;
   & > svg {
     position: absolute;
 
-    top: calc(10% - 20px);
+    top: 0;
     left: calc(90% - 20px);
 
     height: 10px;
 
-    padding: 20px 20px;
+    padding: 12px 20px;
 
     color: #303030;
 
     transition: color 0.2s;
+
+    cursor: pointer;
 
     &:hover {
       color: red;
     }
   }
 
-  & > h1 {
-    font-size: 0.9em;
-    font-weight: bold;
+  &-content {
+    display: flex;
+
+    flex-direction: column;
+    gap: 5px;
+
+    & > * {
+      margin: 0;
+    }
+
+    & > h1 {
+      font-size: 1em;
+      font-weight: bold;
+    }
+
+    & > p {
+      font-size: 0.9em;
+
+      color: #303030;
+    }
   }
 
-  & > p {
-    font-size: 0.8em;
+  &-components {
+    display: flex;
 
-    color: #303030;
+    flex-direction: column;
+    gap: 10px;
+
+    width: 100%;
+
+    &-group {
+      display: flex;
+
+      gap: 5px;
+
+      & > .common-select {
+        width: 100%;
+      }
+    }
   }
 }

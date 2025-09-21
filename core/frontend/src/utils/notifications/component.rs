@@ -4,6 +4,8 @@ use bon::Builder;
 use itertools::Itertools;
 use yew::Callback;
 
+use crate::utils::{notifications::notification::Notification, types::InRef};
+
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum NotificationComponentKind {
     #[default]
@@ -15,43 +17,67 @@ pub enum NotificationComponentKind {
 pub enum NotificationComponent {
     RedirectButton(RedirectButton),
     ActionButton(ActionButton),
-    DropDown(DropDown),
+    Dropdown(Dropdown),
 }
 
 #[derive(Builder, Clone, Debug, PartialEq)]
 pub struct RedirectButton {
-    #[builder(field)]
+    #[builder(default)]
     kind: NotificationComponentKind,
     #[builder(into)]
     text: String,
     #[builder(into)]
-    redirect: String,
+    target: String,
     #[builder(default = true)]
     enabled: bool,
+
+    #[builder(into, default = "")]
+    id: String
 }
 
 #[derive(Builder, Clone, Debug, PartialEq)]
 pub struct ActionButton {
-    #[builder(field)]
+    #[builder(default)]
     kind: NotificationComponentKind,
     #[builder(into)]
     text: String,
-    #[builder(into)]
-    action: Callback<Rc<RefCell<Self>>>,
+    #[builder(into, default = |_| {})]
+    action: Callback<InRef<Notification>>,
     #[builder(default = true)]
     enabled: bool,
+
+    #[builder(into, default = "")]
+    id: String
 }
 
 #[derive(Builder, Clone, Debug, PartialEq)]
-pub struct DropDown {
+pub struct Dropdown {
     #[builder(field)]
-    values: Vec<String>,
+    values: Vec<(String, String)>,
+    #[builder(field)]
+    current_value: InRef<String>,
+
     #[builder(default = 0)]
     default: usize,
     #[builder(default = true)]
     enabled: bool,
 
-    onchange: Callback<Rc<RefCell<Self>>>,
+    #[builder(into, default = |_| {})]
+    on_change: Callback<InRef<Notification>>,
+
+    #[builder(into, default = "")]
+    id: String
+}
+
+impl NotificationComponent {
+    #[inline]
+    pub fn id(&self) -> &str {
+        match self {
+            NotificationComponent::RedirectButton(button) => button.id(),
+            NotificationComponent::ActionButton(button) => button.id(),
+            NotificationComponent::Dropdown(dropdown) => dropdown.id(),
+        }
+    }
 }
 
 impl RedirectButton {
@@ -61,13 +87,18 @@ impl RedirectButton {
     }
 
     #[inline]
-    pub fn redirect(&self) -> &str {
-        &self.redirect
+    pub fn target(&self) -> &str {
+        &self.target
     }
 
     #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
+    }
+
+    #[inline]
+    pub fn id(&self) -> &str {
+        &self.id
     }
 
     #[inline]
@@ -86,8 +117,8 @@ impl RedirectButton {
     }
 
     #[inline]
-    pub fn set_redirect(&mut self, redirect: String) {
-        self.redirect = redirect;
+    pub fn set_target(&mut self, redirect: String) {
+        self.target = redirect;
     }
 
     #[inline]
@@ -103,7 +134,7 @@ impl ActionButton {
     }
 
     #[inline]
-    pub fn action(&self) -> &Callback<Rc<RefCell<Self>>> {
+    pub fn action(&self) -> &Callback<InRef<Notification>> {
         &self.action
     }
 
@@ -115,6 +146,11 @@ impl ActionButton {
     #[inline]
     pub fn kind(&self) -> NotificationComponentKind {
         self.kind
+    }
+
+    #[inline]
+    pub fn id(&self) -> &str {
+        &self.id
     }
 
     #[inline]
@@ -133,10 +169,10 @@ impl ActionButton {
     }
 }
 
-impl DropDown {
+impl Dropdown {
     #[inline]
-    pub fn values(&self) -> &[String] {
-        &self.values
+    pub fn values(&self) -> Vec<(String, String)> {
+        self.values.clone()
     }
 
     #[inline]
@@ -145,8 +181,8 @@ impl DropDown {
     }
 
     #[inline]
-    pub fn onchange(&self) -> &Callback<Rc<RefCell<Self>>> {
-        &self.onchange
+    pub fn on_change(&self) -> &Callback<InRef<Notification>> {
+        &self.on_change
     }
 
     #[inline]
@@ -155,7 +191,17 @@ impl DropDown {
     }
 
     #[inline]
-    pub fn set_values(&mut self, values: Vec<String>) {
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    #[inline]
+    pub fn current_value(&self) -> InRef<String> {
+        self.current_value.clone()
+    }
+
+    #[inline]
+    pub fn set_values(&mut self, values: Vec<(String, String)>) {
         self.values = values;
     }
 
@@ -168,12 +214,16 @@ impl DropDown {
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
     }
+
+    pub fn set_current_value(&self, value: String) {
+        *self.current_value.borrow_mut() = value;
+    }
 }
 
-impl<S: drop_down_builder::State> DropDownBuilder<S> {
-    pub fn add_value(mut self, value: impl ToString) -> Self {
+impl<S: dropdown_builder::State> DropdownBuilder<S> {
+    pub fn add_value(mut self, key: impl ToString, value: impl ToString) -> Self {
         self.values
-            .push(value.to_string());
+            .push((key.to_string(), value.to_string()));
         self
     }
 }
@@ -190,9 +240,9 @@ impl Into<NotificationComponent> for ActionButton {
     }
 }
 
-impl Into<NotificationComponent> for DropDown {
+impl Into<NotificationComponent> for Dropdown {
     fn into(self) -> NotificationComponent {
-        NotificationComponent::DropDown(self)
+        NotificationComponent::Dropdown(self)
     }
 }
 
@@ -202,10 +252,10 @@ pub fn group_components(
     components
         .iter()
         .enumerate()
-        .chunk_by(|(_, components)| match components {
-            NotificationComponent::DropDown(_) => "drop",
+        .chunk_by(|(i, components)| match components {
+            NotificationComponent::Dropdown(_) => format!("drop{i}"),
             | NotificationComponent::RedirectButton(_)
-            | NotificationComponent::ActionButton(_) => "button"
+            | NotificationComponent::ActionButton(_) => "button".to_string()
         })
         .into_iter()
         .map(|(_, group)| {

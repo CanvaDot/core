@@ -6,7 +6,7 @@ use yew::Properties;
 use crate::utils::colors::{ERROR_RED, INFO_BLUE, SUCCESS_GREEN};
 use crate::utils::notifications::component::{
     ActionButton,
-    DropDown,
+    Dropdown,
     NotificationComponent,
     RedirectButton,
 };
@@ -30,7 +30,7 @@ pub struct Notification {
     #[builder(default = NotificationLevel::Info)]
     level: NotificationLevel,
 
-    #[builder(default = Instant::now())]
+    #[builder(skip = Instant::now())]
     created_at: Instant,
     #[builder(default = Duration::from_secs(5))]
     duration: Duration,
@@ -72,6 +72,18 @@ impl Notification {
             .elapsed()
             > self.duration()
     }
+
+    pub fn get_component(&self, id: &str) -> Option<&NotificationComponent> {
+        self.components
+            .iter()
+            .find(|component| component.id() == id)
+    }
+
+    pub fn get_component_mut(&mut self, id: &str) -> Option<&mut NotificationComponent> {
+        self.components
+            .iter_mut()
+            .find(|component| component.id() == id)
+    }
 }
 
 impl NotificationLevel {
@@ -98,7 +110,7 @@ impl<S: notification_builder::State> NotificationBuilder<S> {
         self
     }
 
-    pub fn add_dropdown(mut self, dropdown: DropDown) -> Self {
+    pub fn add_dropdown(mut self, dropdown: Dropdown) -> Self {
         self.components
             .push(dropdown.into());
         self

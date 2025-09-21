@@ -37,17 +37,20 @@ pub fn app_button(props: &ButtonProps) -> Html {
         let target = props
             .target
             .clone();
-        Callback::from(move |event| match &target {
-            ButtonTarget::Callback(callback) => {
-                callback.emit(event);
-            },
 
-            ButtonTarget::Link(link) => {
-                window()
-                    .location()
-                    .set_href(&link)
-                    .expect("To redirect.");
-            },
+        Callback::from(move |event| {
+            match &target {
+                ButtonTarget::Callback(callback) => {
+                    callback.emit(event);
+                },
+
+                ButtonTarget::Link(link) => {
+                    window()
+                        .location()
+                        .set_href(&link)
+                        .expect("To redirect.");
+                },
+            }
         })
     };
 
@@ -76,14 +79,14 @@ pub fn app_button(props: &ButtonProps) -> Html {
 }
 
 #[derive(Properties, PartialEq)]
-pub struct DropdownProps<'i> {
+pub struct DropdownProps {
     #[prop_or(0)]
     pub default: usize,
-    pub items: Vec<(&'i str, &'i str)>,
+    pub values: Vec<(String, String)>,
     #[prop_or(true)]
     pub enabled: bool,
     #[prop_or_default]
-    pub on_change: Callback<String>,
+    pub onchange: Callback<String>,
 
     #[prop_or_default]
     class: String,
@@ -94,13 +97,13 @@ pub struct DropdownProps<'i> {
 }
 
 #[function_component(AppDropdown)]
-pub fn app_dropdown(props: &DropdownProps<'static>) -> Html {
+pub fn app_dropdown(props: &DropdownProps) -> Html {
     let selected_key = use_state(|| {
         props
-            .items
+            .values
             .get(min(
                 props
-                    .items
+                    .values
                     .len()
                     - 1,
                 props.default,
@@ -112,7 +115,7 @@ pub fn app_dropdown(props: &DropdownProps<'static>) -> Html {
 
     let on_click = |key: String, value: String| {
         let callback = props
-            .on_change
+            .onchange
             .clone();
         let selected_key = selected_key.clone();
 
@@ -131,7 +134,7 @@ pub fn app_dropdown(props: &DropdownProps<'static>) -> Html {
     };
 
     let options = props
-        .items
+        .values
         .iter()
         .map(|(key, value)| {
             html! {

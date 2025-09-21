@@ -6,10 +6,14 @@ use thiserror::Error;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
+use instant::Duration;
 
 use crate::components::hooks::notifications::{use_notifications, ResultReport};
 use crate::utils::color_memory::ColorMemory;
 use crate::utils::colors::{compose, decompose};
+use crate::utils::notifications::component::{ActionButton, Dropdown, NotificationComponent, NotificationComponentKind, RedirectButton};
+use crate::utils::notifications::notification::{Notification, NotificationLevel};
+use crate::utils::types::InRef;
 
 const MAX_LAST_COLORS: usize = 5;
 const COLOR_MEMORY_KEY: &str = "color_memory";
@@ -47,6 +51,58 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
             .unwrap_or(Srgb::new(0, 105, 255))
     });
     let picker_expanded = use_state(|| !false);
+
+    let hub = notification_hub.clone();
+    use_effect_with((), move |_| {
+        hub.notify(
+            Notification::builder()
+                .title("Test")
+                .message("This is indeed a test.")
+                .level(NotificationLevel::Error)
+                .duration(Duration::from_secs(3600))
+                .add_action_button(
+                    ActionButton::builder()
+                        .text("Test Button")
+                        .id("test_button")
+                        .action(|notification: InRef<Notification>| {
+                            let mut notif_mut = notification.borrow_mut();
+                            let button = notif_mut.get_component_mut("test_button");
+                            log::info!("{button:?}");
+
+                            if let Some(NotificationComponent::ActionButton(button)) = button {
+                                button.set_enabled(false);
+                            }
+                        })
+                        .build()
+                )
+                .add_redirect_button(
+                    RedirectButton::builder()
+                        .text("Test 2")
+                        .target("/")
+                        .kind(NotificationComponentKind::Secondary)
+                        .build()
+                )
+                .add_dropdown(
+                    Dropdown::builder()
+                        .add_value("Some key", "key")
+                        .add_value("Some key 1", "key1")
+                        .build()
+                )
+                .add_dropdown(
+                    Dropdown::builder()
+                        .add_value("Some key", "key")
+                        .add_value("Some key 1", "key1")
+                        .build()
+                )
+                .add_redirect_button(
+                    RedirectButton::builder()
+                        .text("Test 3")
+                        .target("/")
+                        .build()
+                )
+                .build()
+        );
+    });
 
     let on_draw_event = {
         let current_color = current_color.clone();

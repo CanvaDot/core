@@ -5,12 +5,14 @@ use log::error;
 use yew::prelude::*;
 
 use crate::app::SharedAppContext;
-use crate::utils::notification_store::{
-    Notification,
-    NotificationComponent,
-    NotificationComponentType,
-    NotificationLevel,
-};
+use crate::utils::notifications::component::{ActionButton, NotificationComponent};
+use crate::utils::notifications::notification::{Notification, NotificationLevel};
+use crate::utils::types::InRef;
+
+
+pub trait ResultReport<T, E: Error> {
+    fn or_notify(self, handle: &NotificationHandle) -> T;
+}
 
 pub struct NotificationHandle {
     state_handle: Option<SharedAppContext>,
@@ -18,7 +20,7 @@ pub struct NotificationHandle {
 
 impl NotificationHandle {
     pub fn notify(&self, notification: Notification) {
-        let Some(state_handle) = &self.state_handle else {
+        let Some(ref state_handle) = self.state_handle else {
             // XXX: Report this.
             error!("Couldn't notify, SharedAppContext was not found.");
             return;
@@ -26,12 +28,9 @@ impl NotificationHandle {
 
         state_handle
             .notifications
+            .borrow_mut()
             .add(notification);
     }
-}
-
-pub trait ResultReport<T, E: Error> {
-    fn or_notify(self, handle: &NotificationHandle) -> T;
 }
 
 impl<T, E: Error> ResultReport<T, E> for Result<T, E> {
@@ -41,15 +40,25 @@ impl<T, E: Error> ResultReport<T, E> for Result<T, E> {
 
             Err(error) => {
                 handle.notify(
-                    Notification::new("Error", format!("{error}"))
-                        .set_level(NotificationLevel::Error)
-                        .set_components(vec![NotificationComponent::RedirectButton {
-                            text: "Notify".into(),
-                            redirect: "/".into(),
-                            enabled: false,
-                            kind: NotificationComponentType::Primary,
-                        }])
-                        .clone(),
+                    Notification::builder()
+                        .title("Unexpected Error")
+                        .message("The application was unable to process your request.")
+                        .level(NotificationLevel::Error)
+                        .add_action_button(
+                            ActionButton::builder()
+                                .text("Report")
+                                .id("report_button")
+                                .action(|notification: InRef<Notification>| {
+                                    let mut notif_mut = notification.borrow_mut();
+                                    let button = notif_mut.get_component_mut("report_button");
+
+                                    if let Some(NotificationComponent::ActionButton(button)) = button {
+                                        button.set_enabled(false);
+                                    }
+                                })
+                                .build()
+                        )
+                        .build()
                 );
 
                 panic!(

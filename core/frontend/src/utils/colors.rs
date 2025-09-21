@@ -3,7 +3,7 @@ use palette::{FromColor, Hsl, Srgb};
 pub static SUCCESS_GREEN: Srgb<u8> = Srgb::new(0, 173, 12);
 pub static INFO_BLUE: Srgb<u8> = Srgb::new(0, 105, 255);
 pub static ERROR_RED: Srgb<u8> = Srgb::new(230, 23, 23);
-pub static SECONDARY_GREY: Srgb<u8> = Srgb::new(153, 153, 153);
+pub static SECONDARY_GREY: Srgb<u8> = Srgb::new(224, 224, 224);
 
 pub fn decompose(rgb: &Srgb<u8>) -> (u16, u8) {
     let rgb_f: Srgb<f32> = rgb.into_format();

@@ -1,12 +1,28 @@
 use std::cmp::min;
 
-use gloo::utils::window;
+use gloo::utils::{document, window};
 use palette::rgb::channels::Rgba;
 use palette::Srgb;
+use thiserror::Error;
+use wasm_bindgen::JsValue;
+use web_sys::Element;
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
-use crate::utils::colors::{contrasting_bw, INFO_BLUE};
+use crate::{components::hooks::notifications::{use_notifications, ResultReport}, utils::colors::{contrasting_bw, INFO_BLUE}};
+
+
+#[derive(Error, Debug)]
+pub enum CommonElementError {
+    #[error(
+        "Couldn't find element cordinate: {}",
+        .0.as_string().unwrap_or(format!("{:?}", .0))
+    )]
+    MissingCordinate(JsValue),
+
+    #[error("Could not find an HTML element with the '{0}' selector.")]
+    MissingElement(String)
+}
 
 #[derive(PartialEq, Clone)]
 pub enum ButtonTarget {
@@ -96,8 +112,12 @@ pub struct DropdownProps {
     style: String,
 }
 
-#[function_component(AppDropdown)]
-pub fn app_dropdown(props: &DropdownProps) -> Html {
+#[function_component(AppSelect)]
+pub fn app_select(props: &DropdownProps) -> Html {
+    let expanded = use_state(|| false);
+    let portal_style = use_state(|| None);
+    let trigger_ref = use_node_ref();
+    let notification_hub = use_notifications();
     let selected_key = use_state(|| {
         props
             .values
@@ -111,7 +131,6 @@ pub fn app_dropdown(props: &DropdownProps) -> Html {
             .map(|(key, _)| key.to_string())
             .unwrap_or(String::new())
     });
-    let expanded = use_state(|| false);
 
     let on_click = |key: String, value: String| {
         let callback = props
@@ -149,8 +168,66 @@ pub fn app_dropdown(props: &DropdownProps) -> Html {
             }
         });
 
+    {
+        let portal_style = portal_style.clone();
+        let expanded = expanded.clone();
+        let notification_hub = notification_hub.clone();
+        let trigger_ref = trigger_ref.clone();
+
+        use_effect_with((*expanded).clone(), move |expanded| {
+            if *expanded {
+                if let Some(element) = trigger_ref.cast::<Element>() {
+                    let window = window();
+                    let rect = element.get_bounding_client_rect();
+
+                    let style = format!(
+                        r#"
+                            position: absolute;
+
+                            top: {}px;
+                            left: {}px;
+
+                            width: {}px;
+
+                            z-index: 100;
+                        "#,
+                        2.0 + rect.bottom() + window.scroll_y()
+                            .map_err(|error| CommonElementError::MissingCordinate(error))
+                            .or_notify(&notification_hub),
+                        rect.left() + window.scroll_x()
+                            .map_err(|error| CommonElementError::MissingCordinate(error))
+                            .or_notify(&notification_hub),
+                        rect.width()
+                    );
+
+                    portal_style.set(Some(style));
+                }
+            }
+        });
+    }
+
+    let portal = if *expanded && props.enabled {
+        let host = document()
+            .get_element_by_id("tooltip-portal")
+            .ok_or(CommonElementError::MissingElement("#tooltip-portal".into()))
+            .or_notify(&notification_hub);
+
+        create_portal(
+            html! {
+                <div class="common-select-dropdown" style={(*portal_style).clone()}>
+                    {for options}
+                </div>
+            },
+            host
+        )
+    } else {
+        Html::default()
+    };
+
+
     html! {
         <div
+            ref={trigger_ref.clone()}
             class={classes!(
                 "common-select",
                 (!props.enabled).then_some("common-select-disabled"),
@@ -160,9 +237,7 @@ pub fn app_dropdown(props: &DropdownProps) -> Html {
         >
             <span>{&*selected_key}</span>
             <Icon icon_id={IconId::FontAwesomeSolidChevronDown} />
-            if *expanded && props.enabled {
-                <div>{for options}</div>
-            }
+            {portal}
         </div>
     }
 }

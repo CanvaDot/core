@@ -3,7 +3,7 @@ use palette::Srgb;
 use yew::prelude::*;
 
 use crate::components::color_picker::ColorPicker;
-use crate::components::common::{AppButton, AppDropdown, ButtonTarget};
+use crate::components::common::{AppButton, AppSelect, ButtonTarget};
 use crate::components::notifications::hub::NotificationHub;
 use crate::utils::notifications::store::NotificationStore;
 use crate::utils::types::InRef;

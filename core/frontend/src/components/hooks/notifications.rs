@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::fmt::Display;
 use std::rc::Rc;
 
 use log::error;
@@ -10,7 +10,7 @@ use crate::utils::notifications::notification::{Notification, NotificationLevel}
 use crate::utils::types::InRef;
 
 
-pub trait ResultReport<T, E: Error> {
+pub trait ResultReport<T, E: Display> {
     fn or_notify(self, handle: &NotificationHandle) -> T;
 }
 
@@ -33,7 +33,7 @@ impl NotificationHandle {
     }
 }
 
-impl<T, E: Error> ResultReport<T, E> for Result<T, E> {
+impl<T, E: Display> ResultReport<T, E> for Result<T, E> {
     fn or_notify(self, handle: &NotificationHandle) -> T {
         match self {
             Ok(value) => value,
@@ -73,6 +73,7 @@ impl<T, E: Error> ResultReport<T, E> for Result<T, E> {
         }
     }
 }
+
 
 #[hook]
 pub fn use_notifications() -> Rc<NotificationHandle> {

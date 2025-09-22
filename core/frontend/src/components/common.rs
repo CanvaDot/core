@@ -1,11 +1,11 @@
 use std::cmp::min;
 
-use gloo::utils::{document, window};
+use gloo::{events::EventListener, utils::{document, window}};
 use palette::rgb::channels::Rgba;
 use palette::Srgb;
 use thiserror::Error;
-use wasm_bindgen::JsValue;
-use web_sys::Element;
+use wasm_bindgen::{JsCast, JsValue};
+use web_sys::{Element, Node};
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
@@ -143,6 +143,30 @@ pub fn app_select(props: &DropdownProps) -> Html {
             selected_key.set(key.clone());
         })
     };
+
+    {
+        let expanded = expanded.clone();
+        let trigger_ref = trigger_ref.clone();
+
+        use_effect_with((*expanded).clone(), move |is_expanded| {
+            if *is_expanded {
+                let listener = EventListener::new(&document(), "click", move |event| {
+                    if let (Some(target), Some(trigger)) = (
+                        event.target().and_then(|target| target.dyn_into::<Node>().ok()),
+                        trigger_ref.cast::<Node>()
+                    ) {
+                        if !trigger.contains(Some(&target)) {
+                            expanded.set(false);
+                        }
+                    }
+                });
+
+                Box::new(move || { drop(listener); }) as Box<dyn FnOnce()>
+            } else {
+                Box::new(|| { () }) as Box<dyn FnOnce()>
+            }
+        })
+    }
 
     let expand = {
         let expanded = expanded.clone();

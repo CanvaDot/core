@@ -4,7 +4,7 @@ use palette::rgb::channels::Rgba;
 use yew::{function_component, html, use_state, Callback, Html, Properties};
 use yew_icons::{Icon, IconId};
 
-use crate::components::common::{AppButton, AppDropdown, ButtonTarget};
+use crate::components::common::{AppButton, AppSelect, ButtonTarget};
 use crate::utils::notifications::component::{group_components, NotificationComponent, NotificationComponentKind};
 use crate::utils::types::InRef;
 use crate::utils::notifications::notification::Notification;
@@ -72,7 +72,7 @@ pub fn notification_element(props: &NotificationProps) -> Html {
                     },
 
                     NotificationComponent::Dropdown(dropdown) => html! {
-                        <AppDropdown
+                        <AppSelect
                             values={dropdown.values()}
                             default={dropdown.default()}
                             enabled={dropdown.enabled()}

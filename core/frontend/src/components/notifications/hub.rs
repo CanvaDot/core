@@ -1,7 +1,8 @@
 use std::rc::Rc;
 
 use gloo::timers::callback::Interval;
-use yew::{classes, function_component, html, use_effect_with, use_state, Html, Properties};
+use uuid::Uuid;
+use yew::{classes, function_component, html, use_effect_with, use_state, Callback, Html, Properties};
 
 use crate::app::SharedAppContext;
 use crate::components::notifications::notification::NotificationElement;
@@ -23,11 +24,11 @@ pub fn notification_hub(props: &NotificationHubProps) -> Html {
     let notifications = props.app_context.notifications.clone();
 
     {
-        let notifs_borrow = notifications.clone();
+        let notifications = notifications.clone();
 
         use_effect_with((), |_| {
             let interval = Interval::new(1000, move || {
-                notifs_borrow.borrow()
+                notifications.borrow()
                     .remove_expired();
                 re_render.set(!*re_render);
             });
@@ -38,14 +39,25 @@ pub fn notification_hub(props: &NotificationHubProps) -> Html {
         })
     }
 
+    let on_close_notification = {
+        let notifications = notifications.clone();
+
+        Callback::from(move |id: Uuid| {
+            notifications.borrow()
+                .remove_by_id(id);
+        })
+    };
+
     let notifs_borrow = notifications.borrow().all();
     let all_notifs = notifs_borrow.borrow();
-
 
     html! {
         <aside class={classes!(&props.class, "notification-hub")} aria-live="polite">
             {for all_notifs.iter().map(|notification| html! {
-                <NotificationElement notification={Rc::clone(&notification)} />
+                <NotificationElement
+                    notification={Rc::clone(&notification)}
+                    on_close={&on_close_notification}
+                />
             })}
         </aside>
     }

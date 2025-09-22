@@ -1,10 +1,14 @@
+use gloo::storage::{LocalStorage, Storage};
 use log::info;
 use palette::Srgb;
 use yew::prelude::*;
 
 use crate::components::color_picker::ColorPicker;
 use crate::components::common::{AppButton, AppSelect, ButtonTarget};
+use crate::components::hooks::notifications::{use_notifications, ResultReport};
 use crate::components::notifications::hub::NotificationHub;
+use crate::utils::notifications::component::{ActionButton, NotificationComponentKind};
+use crate::utils::notifications::notification::{Notification, NotificationLevel};
 use crate::utils::notifications::store::NotificationStore;
 use crate::utils::types::InRef;
 
@@ -18,6 +22,7 @@ pub struct AppContext {
 #[function_component(App)]
 pub fn app() -> Html {
     let app_context = use_state(|| AppContext::default());
+    let notification_hub = use_notifications();
 
     let on_draw = {
         Callback::from(|color: Srgb<u8>| {
@@ -25,10 +30,48 @@ pub fn app() -> Html {
         })
     };
 
+    if
+        env!("CANVADOT_PROFILE") == "DEBUG".to_string()
+        && LocalStorage::get("remind_build").unwrap_or(1) == 1
+    {
+        let notification_hub = notification_hub.clone();
+
+        app_context
+            .notifications
+            .borrow()
+            .add(
+                Notification::builder()
+                    .title("Test Build")
+                    .level(NotificationLevel::Info)
+                    .message(format!("You are using a test build, generated at {}", env!("CANVADOT_BUILD_AGE")))
+                    .add_action_button(
+                        ActionButton::builder()
+                            .text("Dismiss")
+                            .action(|notification: InRef<Notification>| {
+                                notification.borrow()
+                                    .close();
+                            })
+                            .build()
+                    )
+                    .add_action_button(
+                        ActionButton::builder()
+                            .text("Stop reminding")
+                            .kind(NotificationComponentKind::Secondary)
+                            .action(move |notification: InRef<Notification>| {
+                                LocalStorage::set("remind_build", 0)
+                                    .or_notify(&notification_hub);
+
+                                notification.borrow()
+                                    .close();
+                            })
+                            .build()
+                    )
+                    .build()
+            );
+    }
+
     html! {
         <ContextProvider<SharedAppContext> context={app_context.clone()}>
-            <AppButton text="test" target={ButtonTarget::Link("/".into())} enabled=true />
-
             <NotificationHub class="global-notification-hub" app_context={app_context.clone()} />
             <ColorPicker class="global-color-picker" on_draw={on_draw} />
         </ContextProvider<SharedAppContext>>

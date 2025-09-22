@@ -1,5 +1,4 @@
 #![deny(clippy::pedantic)]
-#![deny(clippy::unwrap_used)]
 #![deny(clippy::match_like_matches_macro)]
 
 #[cfg(not(feature = "coverage"))]
@@ -23,6 +22,8 @@ mod utils;
 
 #[cfg(not(feature = "coverage"))]
 fn main() {
+    use gloo::utils::document;
+
     let fmt_layer = ts_layer()
         .with_ansi(false)
         .without_time()
@@ -37,7 +38,12 @@ fn main() {
         .with(fmt_layer)
         .init();
 
-    Renderer::<App>::new().render();
+    let app_node = document()
+        .get_element_by_id("app")
+        .expect("No #app element found in index.html");
+
+    Renderer::<App>::with_root(app_node)
+        .render();
 }
 
 #[cfg(feature = "coverage")]

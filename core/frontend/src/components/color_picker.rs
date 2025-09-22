@@ -1,13 +1,16 @@
+use std::rc::Rc;
+
 use gloo::storage::errors::StorageError;
 use gloo::storage::{LocalStorage, Storage};
 use palette::rgb::channels::Rgba;
 use palette::Srgb;
 use thiserror::Error;
+use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
-use crate::components::hooks::notifications::{use_notifications, ResultReport};
+use crate::components::hooks::notifications::{use_notifications, NotificationHandle, ResultReport};
 use crate::utils::color_memory::ColorMemory;
 use crate::utils::colors::{compose, decompose};
 
@@ -61,7 +64,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         })
     };
 
-    let change_color_event = |color: Srgb<u8>| {
+    let pick_color_memory_event = |color: Srgb<u8>| {
         let current_color = current_color.clone();
         let color_memory = color_memory.clone();
         let notification_hub = notification_hub.clone();
@@ -86,34 +89,47 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         Hue,
     }
 
-    let change_slider_event = |ty: ChangeSliderType| {
+    fn start_slider_event<T: JsCast>(
+        color_memory: UseStateHandle<ColorMemory>,
+        current_color: UseStateHandle<Srgb<u8>>,
+        notification_hub: Rc<NotificationHandle>
+    ) -> Callback<T> {
+        Callback::from(move |_: T| {
+            let mut new_memory = (*color_memory).clone();
+            new_memory.push(*current_color).or_notify(&notification_hub);
+            color_memory.set(new_memory);
+        })
+    }
+
+    let update_slider_event = |ty: ChangeSliderType| {
         let current_color = current_color.clone();
-        let color_memory = color_memory.clone();
         let notification_hub = notification_hub.clone();
 
-        Callback::from(move |event: Event| {
-            let value = event
+        Callback::from(move |event: InputEvent| {
+            let input = event
                 .target_dyn_into::<HtmlInputElement>()
                 .ok_or(ColorPickerError::DynCastError)
-                .or_notify(&notification_hub)
-                .value_as_number();
+                .or_notify(&notification_hub);
 
+            let value = input.value_as_number();
             let new_color = match ty {
                 ChangeSliderType::Brightness => compose(hue, value as u8),
                 ChangeSliderType::Hue => compose(value as u16, lightness),
             };
 
-            LocalStorage::set(LAST_COLOR_KEY, new_color).or_notify(&notification_hub);
-
-            let mut new_memory = (*color_memory).clone();
-            new_memory
-                .push(*current_color)
-                .or_notify(&notification_hub);
-            color_memory.set(new_memory);
-
             current_color.set(new_color);
         })
     };
+
+    fn commit_slider_event<T: JsCast>(
+        current_color: UseStateHandle<Srgb<u8>>,
+        notification_hub: Rc<NotificationHandle>
+    ) -> Callback<T> {
+        Callback::from(move |_| {
+            LocalStorage::set(LAST_COLOR_KEY, *current_color)
+                .or_notify(&notification_hub);
+        })
+    }
 
     let expand_picker_event = {
         let picker_expanded = picker_expanded.clone();
@@ -135,15 +151,52 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                             value={hue.to_string()}
                             min="0"
                             max="350"
-                            onchange={change_slider_event(ChangeSliderType::Hue)}
-                            style={format!("--brightness: {}%", (lightness as f32 / 50.0) * 100.0)}
+                            style={format!("--brightness: {}%", lightness)}
+
+                            onmousedown={start_slider_event(
+                                color_memory.clone(),
+                                current_color.clone(),
+                                notification_hub.clone()
+                            )}
+                            ontouchstart={start_slider_event(
+                                color_memory.clone(),
+                                current_color.clone(),
+                                notification_hub.clone()
+                            )}
+                            oninput={update_slider_event(ChangeSliderType::Hue)}
+                            onmouseup={commit_slider_event(
+                                current_color.clone(),
+                                notification_hub.clone()
+                            )}
+                            ontouchend={commit_slider_event(
+                                current_color.clone(),
+                                notification_hub.clone()
+                            )}
                         />
                         <input
                             type="range"
                             value={lightness.to_string()}
                             min="1"
-                            max="100"
-                            onchange={change_slider_event(ChangeSliderType::Brightness)}
+                            max="99"
+                            onmousedown={start_slider_event(
+                                color_memory.clone(),
+                                current_color.clone(),
+                                notification_hub.clone()
+                            )}
+                            ontouchstart={start_slider_event(
+                                color_memory.clone(),
+                                current_color.clone(),
+                                notification_hub.clone()
+                            )}
+                            oninput={update_slider_event(ChangeSliderType::Brightness)}
+                            onmouseup={commit_slider_event(
+                                current_color.clone(),
+                                notification_hub.clone()
+                            )}
+                            ontouchend={commit_slider_event(
+                                current_color.clone(),
+                                notification_hub.clone()
+                            )}
                         />
                     </div>
                 </div>
@@ -167,7 +220,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                         <button
                             style={ format!("background-color: #{:08X}", color.into_u32::<Rgba>()) }
                             class="color-picker-color"
-                            onclick={change_color_event(color.clone())}
+                            onclick={pick_color_memory_event(color.clone())}
                         >
                         </button>
                     }

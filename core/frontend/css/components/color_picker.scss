@@ -160,13 +160,13 @@ $menu-width: 440px;
   & > input:first-child {
     background: linear-gradient(
       to right,
-      red 0%,
-      yellow 16.66%,
-      lime 33.33%,
-      cyan 50%,
-      blue 66.66%,
-      magenta 83.33%,
-      red 100%
+      hsl(0, 100%, var(--brightness)) 0%,
+      hsl(60, 100%, var(--brightness)) 16.66%,
+      hsl(120, 100%, var(--brightness)) 33.33%,
+      hsl(180, 100%, var(--brightness)) 50%,
+      hsl(240, 100%, var(--brightness)) 66.66%,
+      hsl(300, 100%, var(--brightness)) 83.33%,
+      hsl(360, 100%, var(--brightness)) 100%
     );
 
     &::-moz-range-track {

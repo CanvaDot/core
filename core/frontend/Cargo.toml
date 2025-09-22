@@ -27,6 +27,7 @@ palette = { version = "0.7.6", features = ["serde", "serializing"] }
 instant = { version = "0.1.13", features = ["now", "wasm-bindgen"] }
 bon = "3.7.2"
 itertools = "0.14.0"
+uuid = { version = "1.18.1", features = ["js", "v4"] }
 
 [features]
 default = []

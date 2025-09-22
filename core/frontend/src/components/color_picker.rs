@@ -75,10 +75,12 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                         })
                         .build()
                 )
-                .add_redirect_button(
-                    RedirectButton::builder()
-                        .text("Test 2")
-                        .target("/")
+                .add_action_button(
+                    ActionButton::builder()
+                        .text("Close Test")
+                        .action(|notification: InRef<Notification>| {
+                            notification.borrow().close();
+                        })
                         .kind(NotificationComponentKind::Secondary)
                         .build()
                 )

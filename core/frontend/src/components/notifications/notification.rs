@@ -1,7 +1,8 @@
 use std::rc::Rc;
 
 use palette::rgb::channels::Rgba;
-use yew::{function_component, html, use_state, Callback, Html, Properties};
+use uuid::Uuid;
+use yew::{function_component, html, use_effect_with, use_state, Callback, Html, Properties};
 use yew_icons::{Icon, IconId};
 
 use crate::components::common::{AppButton, AppSelect, ButtonTarget};
@@ -13,15 +14,39 @@ use crate::utils::colors::SECONDARY_GREY;
 
 #[derive(Properties, PartialEq)]
 pub struct NotificationProps {
-    pub notification: InRef<Notification>
+    pub notification: InRef<Notification>,
+    pub on_close: Callback<Uuid>
 }
 
 #[function_component(NotificationElement)]
 pub fn notification_element(props: &NotificationProps) -> Html {
-    let notif_borrow = props.notification.borrow();
     // NOTE: Maybe change this in a future.
     let re_render = use_state(|| true);
 
+    let on_close = {
+        let notif_rc = Rc::clone(&props.notification);
+
+        Callback::from(move |_| {
+            let notif_borrow = notif_rc.borrow();
+            notif_borrow.close();
+        })
+    };
+
+    {
+        let notif_rc = Rc::clone(&props.notification);
+        let on_close = props.on_close.clone();
+
+        use_effect_with((), move |_| {
+            let mut notif_borrow = notif_rc.borrow_mut();
+            let id = notif_borrow.id();
+
+            notif_borrow.hook_close(Callback::from(move |_| {
+                on_close.emit(id);
+            }));
+        });
+    }
+
+    let notif_borrow = props.notification.borrow();
     let notif_component_groups = group_components(notif_borrow.components());
     let notif_components = notif_component_groups
         .iter()
@@ -108,7 +133,10 @@ pub fn notification_element(props: &NotificationProps) -> Html {
                     .into_u32::<Rgba>()
             )}
         >
-            <Icon icon_id={IconId::FontAwesomeSolidX} />
+            <Icon
+                icon_id={IconId::FontAwesomeSolidX}
+                onclick={on_close}
+            />
 
             <div class="notification-content">
                 <h1>{notif_borrow.title()}</h1>

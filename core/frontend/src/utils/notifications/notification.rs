@@ -1,7 +1,8 @@
 use bon::Builder;
 use instant::{Duration, Instant};
 use palette::Srgb;
-use yew::Properties;
+use uuid::Uuid;
+use yew::{Callback, Properties};
 
 use crate::utils::colors::{ERROR_RED, INFO_BLUE, SUCCESS_GREEN};
 use crate::utils::notifications::component::{
@@ -34,9 +35,18 @@ pub struct Notification {
     created_at: Instant,
     #[builder(default = Duration::from_secs(5))]
     duration: Duration,
+
+    #[builder(skip = Uuid::new_v4())]
+    id: Uuid,
+    #[builder(into, default = |_| {})]
+    on_close: Callback<()>
 }
 
 impl Notification {
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
     #[inline]
     pub fn components(&self) -> &[NotificationComponent] {
         &self.components
@@ -67,6 +77,15 @@ impl Notification {
         self.duration
     }
 
+    pub fn hook_close(&mut self, callback: Callback<()>) {
+        let orig_on_close = self.on_close.clone();
+
+        self.on_close = Callback::from(move |_| {
+            callback.emit(());
+            orig_on_close.emit(());
+        });
+    }
+
     pub fn is_expired(&self) -> bool {
         self.created_at()
             .elapsed()
@@ -83,6 +102,10 @@ impl Notification {
         self.components
             .iter_mut()
             .find(|component| component.id() == id)
+    }
+
+    pub fn close(&self) {
+        self.on_close.emit(());
     }
 }
 

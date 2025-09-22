@@ -27,7 +27,7 @@ pub fn notification_hub(props: &NotificationHubProps) -> Html {
         let notifications = notifications.clone();
 
         use_effect_with((), |_| {
-            let interval = Interval::new(1000, move || {
+            let interval = Interval::new(500, move || {
                 notifications.borrow()
                     .remove_expired();
                 re_render.set(!*re_render);

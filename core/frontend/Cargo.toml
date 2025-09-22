@@ -32,3 +32,6 @@ uuid = { version = "1.18.1", features = ["js", "v4"] }
 [features]
 default = []
 coverage = []
+
+[build-dependencies]
+chrono = "0.4.42"

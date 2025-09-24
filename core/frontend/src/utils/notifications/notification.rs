@@ -39,7 +39,7 @@ pub struct Notification {
     #[builder(skip = Uuid::new_v4())]
     id: Uuid,
     #[builder(into, default = |_| {})]
-    on_close: Callback<()>
+    on_close: Callback<()>,
 }
 
 impl Notification {
@@ -78,7 +78,9 @@ impl Notification {
     }
 
     pub fn hook_close(&mut self, callback: Callback<()>) {
-        let orig_on_close = self.on_close.clone();
+        let orig_on_close = self
+            .on_close
+            .clone();
 
         self.on_close = Callback::from(move |_| {
             callback.emit(());
@@ -105,7 +107,8 @@ impl Notification {
     }
 
     pub fn close(&self) {
-        self.on_close.emit(());
+        self.on_close
+            .emit(());
     }
 }
 

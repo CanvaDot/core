@@ -27,7 +27,11 @@ impl NotificationStore {
     pub fn remove_expired(&self) {
         self.notifications
             .borrow_mut()
-            .retain(|notification| !notification.borrow().is_expired());
+            .retain(|notification| {
+                !notification
+                    .borrow()
+                    .is_expired()
+            });
     }
 
     pub fn all(&self) -> InRef<Vec<InRef<Notification>>> {
@@ -38,6 +42,11 @@ impl NotificationStore {
     pub fn remove_by_id(&self, id: Uuid) {
         self.notifications
             .borrow_mut()
-            .retain(|notification| notification.borrow().id() != id);
+            .retain(|notification| {
+                notification
+                    .borrow()
+                    .id()
+                    != id
+            });
     }
 }

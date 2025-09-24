@@ -9,7 +9,6 @@ use crate::utils::notifications::component::{ActionButton, NotificationComponent
 use crate::utils::notifications::notification::{Notification, NotificationLevel};
 use crate::utils::types::InRef;
 
-
 pub trait ResultReport<T, E: Display> {
     fn or_notify(self, handle: &NotificationHandle) -> T;
 }
@@ -52,13 +51,15 @@ impl<T, E: Display> ResultReport<T, E> for Result<T, E> {
                                     let mut notif_mut = notification.borrow_mut();
                                     let button = notif_mut.get_component_mut("report_button");
 
-                                    if let Some(NotificationComponent::ActionButton(button)) = button {
+                                    if let Some(NotificationComponent::ActionButton(button)) =
+                                        button
+                                    {
                                         button.set_enabled(false);
                                     }
                                 })
-                                .build()
+                                .build(),
                         )
-                        .build()
+                        .build(),
                 );
 
                 panic!(
@@ -73,7 +74,6 @@ impl<T, E: Display> ResultReport<T, E> for Result<T, E> {
         }
     }
 }
-
 
 #[hook]
 pub fn use_notifications() -> Rc<NotificationHandle> {

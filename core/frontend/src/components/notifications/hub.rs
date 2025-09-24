@@ -2,11 +2,19 @@ use std::rc::Rc;
 
 use gloo::timers::callback::Interval;
 use uuid::Uuid;
-use yew::{classes, function_component, html, use_effect_with, use_state, Callback, Html, Properties};
+use yew::{
+    classes,
+    function_component,
+    html,
+    use_effect_with,
+    use_state,
+    Callback,
+    Html,
+    Properties,
+};
 
 use crate::app::SharedAppContext;
 use crate::components::notifications::notification::NotificationElement;
-
 
 #[derive(Properties, PartialEq)]
 pub struct NotificationHubProps {
@@ -17,18 +25,21 @@ pub struct NotificationHubProps {
     pub app_context: SharedAppContext,
 }
 
-
 #[function_component(NotificationHub)]
 pub fn notification_hub(props: &NotificationHubProps) -> Html {
     let re_render = use_state(|| true);
-    let notifications = props.app_context.notifications.clone();
+    let notifications = props
+        .app_context
+        .notifications
+        .clone();
 
     {
         let notifications = notifications.clone();
 
         use_effect_with((), |_| {
             let interval = Interval::new(500, move || {
-                notifications.borrow()
+                notifications
+                    .borrow()
                     .remove_expired();
                 re_render.set(!*re_render);
             });
@@ -43,12 +54,15 @@ pub fn notification_hub(props: &NotificationHubProps) -> Html {
         let notifications = notifications.clone();
 
         Callback::from(move |id: Uuid| {
-            notifications.borrow()
+            notifications
+                .borrow()
                 .remove_by_id(id);
         })
     };
 
-    let notifs_borrow = notifications.borrow().all();
+    let notifs_borrow = notifications
+        .borrow()
+        .all();
     let all_notifs = notifs_borrow.borrow();
 
     html! {

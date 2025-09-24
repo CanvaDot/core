@@ -1,6 +1,7 @@
 use std::cmp::min;
 
-use gloo::{events::EventListener, utils::{document, window}};
+use gloo::events::EventListener;
+use gloo::utils::{document, window};
 use palette::rgb::channels::Rgba;
 use palette::Srgb;
 use thiserror::Error;
@@ -9,8 +10,8 @@ use web_sys::{Element, Node};
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
-use crate::{components::hooks::notifications::{use_notifications, ResultReport}, utils::colors::{contrasting_bw, INFO_BLUE}};
-
+use crate::components::hooks::notifications::{use_notifications, ResultReport};
+use crate::utils::colors::{contrasting_bw, INFO_BLUE};
 
 #[derive(Error, Debug)]
 pub enum CommonElementError {
@@ -21,7 +22,7 @@ pub enum CommonElementError {
     MissingCordinate(JsValue),
 
     #[error("Could not find an HTML element with the '{0}' selector.")]
-    MissingElement(String)
+    MissingElement(String),
 }
 
 #[derive(PartialEq, Clone)]
@@ -54,19 +55,17 @@ pub fn app_button(props: &ButtonProps) -> Html {
             .target
             .clone();
 
-        Callback::from(move |event| {
-            match &target {
-                ButtonTarget::Callback(callback) => {
-                    callback.emit(event);
-                },
+        Callback::from(move |event| match &target {
+            ButtonTarget::Callback(callback) => {
+                callback.emit(event);
+            },
 
-                ButtonTarget::Link(link) => {
-                    window()
-                        .location()
-                        .set_href(&link)
-                        .expect("To redirect.");
-                },
-            }
+            ButtonTarget::Link(link) => {
+                window()
+                    .location()
+                    .set_href(&link)
+                    .expect("To redirect.");
+            },
         })
     };
 
@@ -152,8 +151,14 @@ pub fn app_select(props: &DropdownProps) -> Html {
             if *is_expanded {
                 let listener = EventListener::new(&document(), "click", move |event| {
                     if let (Some(target), Some(trigger)) = (
-                        event.target().and_then(|target| target.dyn_into::<Node>().ok()),
-                        trigger_ref.cast::<Node>()
+                        event
+                            .target()
+                            .and_then(|target| {
+                                target
+                                    .dyn_into::<Node>()
+                                    .ok()
+                            }),
+                        trigger_ref.cast::<Node>(),
                     ) {
                         if !trigger.contains(Some(&target)) {
                             expanded.set(false);
@@ -161,9 +166,11 @@ pub fn app_select(props: &DropdownProps) -> Html {
                     }
                 });
 
-                Box::new(move || { drop(listener); }) as Box<dyn FnOnce()>
+                Box::new(move || {
+                    drop(listener);
+                }) as Box<dyn FnOnce()>
             } else {
-                Box::new(|| { () }) as Box<dyn FnOnce()>
+                Box::new(|| ()) as Box<dyn FnOnce()>
             }
         })
     }
@@ -215,12 +222,16 @@ pub fn app_select(props: &DropdownProps) -> Html {
 
                             z-index: 100;
                         "#,
-                        2.0 + rect.bottom() + window.scroll_y()
-                            .map_err(|error| CommonElementError::MissingCordinate(error))
-                            .or_notify(&notification_hub),
-                        rect.left() + window.scroll_x()
-                            .map_err(|error| CommonElementError::MissingCordinate(error))
-                            .or_notify(&notification_hub),
+                        2.0 + rect.bottom()
+                            + window
+                                .scroll_y()
+                                .map_err(|error| CommonElementError::MissingCordinate(error))
+                                .or_notify(&notification_hub),
+                        rect.left()
+                            + window
+                                .scroll_x()
+                                .map_err(|error| CommonElementError::MissingCordinate(error))
+                                .or_notify(&notification_hub),
                         rect.width()
                     );
 
@@ -242,12 +253,11 @@ pub fn app_select(props: &DropdownProps) -> Html {
                     {for options}
                 </div>
             },
-            host
+            host,
         )
     } else {
         Html::default()
     };
-
 
     html! {
         <div

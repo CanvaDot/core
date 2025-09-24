@@ -1,10 +1,12 @@
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use bon::Builder;
 use itertools::Itertools;
 use yew::Callback;
 
-use crate::utils::{notifications::notification::Notification, types::InRef};
+use crate::utils::notifications::notification::Notification;
+use crate::utils::types::InRef;
 
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum NotificationComponentKind {
@@ -32,7 +34,7 @@ pub struct RedirectButton {
     enabled: bool,
 
     #[builder(into, default = "")]
-    id: String
+    id: String,
 }
 
 #[derive(Builder, Clone, Debug, PartialEq)]
@@ -47,7 +49,7 @@ pub struct ActionButton {
     enabled: bool,
 
     #[builder(into, default = "")]
-    id: String
+    id: String,
 }
 
 #[derive(Builder, Clone, Debug, PartialEq)]
@@ -66,7 +68,7 @@ pub struct Dropdown {
     on_change: Callback<InRef<Notification>>,
 
     #[builder(into, default = "")]
-    id: String
+    id: String,
 }
 
 impl NotificationComponent {
@@ -172,7 +174,8 @@ impl ActionButton {
 impl Dropdown {
     #[inline]
     pub fn values(&self) -> Vec<(String, String)> {
-        self.values.clone()
+        self.values
+            .clone()
     }
 
     #[inline]
@@ -197,7 +200,8 @@ impl Dropdown {
 
     #[inline]
     pub fn current_value(&self) -> InRef<String> {
-        self.current_value.clone()
+        self.current_value
+            .clone()
     }
 
     #[inline]
@@ -216,7 +220,9 @@ impl Dropdown {
     }
 
     pub fn set_current_value(&self, value: String) {
-        *self.current_value.borrow_mut() = value;
+        *self
+            .current_value
+            .borrow_mut() = value;
     }
 }
 
@@ -246,22 +252,28 @@ impl Into<NotificationComponent> for Dropdown {
     }
 }
 
-pub fn group_components(
-    components: &[NotificationComponent]
-) -> Vec<&[NotificationComponent]> {
+pub fn group_components(components: &[NotificationComponent]) -> Vec<&[NotificationComponent]> {
     components
         .iter()
         .enumerate()
         .chunk_by(|(i, components)| match components {
             NotificationComponent::Dropdown(_) => format!("drop{i}"),
-            | NotificationComponent::RedirectButton(_)
-            | NotificationComponent::ActionButton(_) => "button".to_string()
+            | NotificationComponent::RedirectButton(_) | NotificationComponent::ActionButton(_) => {
+                "button".to_string()
+            },
         })
         .into_iter()
         .map(|(_, group)| {
-            let indices: Vec<_> = group.map(|(i, _)| i).collect();
-            let start = *indices.first().unwrap();
-            let end = *indices.last().unwrap() + 1;
+            let indices: Vec<_> = group
+                .map(|(i, _)| i)
+                .collect();
+            let start = *indices
+                .first()
+                .unwrap();
+            let end = *indices
+                .last()
+                .unwrap()
+                + 1;
             &components[start..end]
         })
         .collect()

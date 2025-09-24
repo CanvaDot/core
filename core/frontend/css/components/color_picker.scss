@@ -108,10 +108,9 @@ $menu-width: 440px;
 
   background-color: $background-color;
 
-  top: 0;
   left: 0;
 
-  transform: translateY(-130%);
+  transform: translateY(-120%);
 
   min-height: 30px;
   width: $menu-width;
@@ -121,6 +120,73 @@ $menu-width: 440px;
   box-shadow: $shadow;
 
   border-radius: $border-radius;
+}
+
+
+.color-picker-selector-values {
+  display: flex;
+
+  height: 50px;
+  width: 100%;
+
+  & > div {
+    display: flex;
+
+    width: 50%;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 10px;
+
+    & > label {
+      display: flex;
+
+      height: 55%;
+
+      border: 1px solid #CACACA;
+      border-radius: 8px;
+      overflow: hidden;
+
+      justify-content: center;
+      align-items: center;
+
+      & > span {
+        background-color: #F7F7F7;
+
+        height: 75%;
+        width: 30px;
+
+        padding: 10px 0;
+
+        font-size: 0.8em;
+
+        border-radius: 5px 0 0 5px;
+
+        text-align: center;
+      }
+
+      & > input {
+        height: 100%;
+        width: 100%;
+
+        border: none;
+        border-radius: 0 5px 5px 0;
+
+        background-color: white;
+
+        outline: none;
+      }
+    }
+
+    &:first-child > label {
+      width: 50%;
+    }
+
+    &:last-child > label {
+      width: 25%;
+    }
+  }
 }
 
 

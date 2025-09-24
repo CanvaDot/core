@@ -63,6 +63,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
             .unwrap_or(Srgb::new(0, 105, 255))
     });
     let picker_expanded = use_state(|| false);
+    let picker_pinned = use_state(|| false);
 
     // DECOMPOSE COLOR INTO HUE AND LIGHTNESS
     let (hue, lightness) = decompose(&*current_color);
@@ -137,9 +138,15 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
     fn commit_slider_event<T: JsCast>(
         current_color: UseStateHandle<Srgb<u8>>,
         notification_hub: Rc<NotificationHandle>,
+        picker_pinned: UseStateHandle<bool>,
+        picker_expanded: UseStateHandle<bool>,
     ) -> Callback<T> {
         Callback::from(move |_| {
             LocalStorage::set(LAST_COLOR_KEY, *current_color).or_notify(&notification_hub);
+
+            if !*picker_pinned {
+                picker_expanded.set(false);
+            }
         })
     }
 
@@ -149,6 +156,14 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
 
         Callback::from(move |_| {
             picker_expanded.set(!*picker_expanded);
+        })
+    };
+
+    let pin_picker_event = {
+        let picker_pinned = picker_pinned.clone();
+
+        Callback::from(move |_| {
+            picker_pinned.set(!*picker_pinned);
         })
     };
 
@@ -170,6 +185,31 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
             <div class={classes!(&props.class, "color-picker-container")}>
                 if *picker_expanded {
                     <div class="color-picker-selector">
+                        <div
+                            class="color-picker-selector-extra"
+                            data-pinned={(*picker_pinned).to_string()}
+                        >
+                            <span class="cps-extra-format">
+                                {format!(
+                                    "rgb({}, {}, {}) - #{:06X}",
+                                    (*current_color).red,
+                                    (*current_color).green,
+                                    (*current_color).blue,
+                                    (*current_color).into_u32::<Rgba>() >> 8
+                                )}
+                            </span>
+                            <div class="cps-extra-utils">
+                                <Icon
+                                    icon_id={IconId::FontAwesomeSolidEyeDropper}
+                                    class="cps-extra-copy"
+                                />
+                                <Icon
+                                    icon_id={IconId::FontAwesomeSolidThumbtack}
+                                    onclick={pin_picker_event}
+                                    class="cps-extra-pin"
+                                />
+                            </div>
+                        </div>
     //                    <div class="color-picker-selector-values">
     //                        <div>
     //                            <label>
@@ -225,11 +265,15 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                                 oninput={update_slider_event(ChangeSliderType::Hue)}
                                 onmouseup={commit_slider_event(
                                     current_color.clone(),
-                                    notification_hub.clone()
+                                    notification_hub.clone(),
+                                    picker_pinned.clone(),
+                                    picker_expanded.clone()
                                 )}
                                 ontouchend={commit_slider_event(
                                     current_color.clone(),
-                                    notification_hub.clone()
+                                    notification_hub.clone(),
+                                    picker_pinned.clone(),
+                                    picker_expanded.clone()
                                 )}
                             />
                             <input
@@ -250,11 +294,15 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                                 oninput={update_slider_event(ChangeSliderType::Brightness)}
                                 onmouseup={commit_slider_event(
                                     current_color.clone(),
-                                    notification_hub.clone()
+                                    notification_hub.clone(),
+                                    picker_pinned.clone(),
+                                    picker_expanded.clone()
                                 )}
                                 ontouchend={commit_slider_event(
                                     current_color.clone(),
-                                    notification_hub.clone()
+                                    notification_hub.clone(),
+                                    picker_pinned.clone(),
+                                    picker_expanded.clone()
                                 )}
                             />
                         </div>

@@ -29,8 +29,7 @@ pub fn app() -> Html {
         })
     };
 
-    if
-        env!("CANVADOT_PROFILE") == "DEBUG".to_string()
+    if env!("CANVADOT_PROFILE") == "DEBUG".to_string()
         && LocalStorage::get("remind_build").unwrap_or(1) == 1
     {
         let notification_hub = notification_hub.clone();
@@ -42,30 +41,34 @@ pub fn app() -> Html {
                 Notification::builder()
                     .title("Test Build")
                     .level(NotificationLevel::Info)
-                    .message(format!("You are using a test build, generated at {}", env!("CANVADOT_BUILD_AGE")))
+                    .message(format!(
+                        "You are using a test build, generated at {}",
+                        env!("CANVADOT_BUILD_AGE")
+                    ))
                     .add_action_button(
                         ActionButton::builder()
                             .text("Dismiss")
                             .action(|notification: InRef<Notification>| {
-                                notification.borrow()
+                                notification
+                                    .borrow()
                                     .close();
                             })
-                            .build()
+                            .build(),
                     )
                     .add_action_button(
                         ActionButton::builder()
                             .text("Stop reminding")
                             .kind(NotificationComponentKind::Secondary)
                             .action(move |notification: InRef<Notification>| {
-                                LocalStorage::set("remind_build", 0)
-                                    .or_notify(&notification_hub);
+                                LocalStorage::set("remind_build", 0).or_notify(&notification_hub);
 
-                                notification.borrow()
+                                notification
+                                    .borrow()
                                     .close();
                             })
-                            .build()
+                            .build(),
                     )
-                    .build()
+                    .build(),
             );
     }
 

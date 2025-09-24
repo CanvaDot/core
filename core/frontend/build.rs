@@ -1,5 +1,6 @@
-use std::time::SystemTime;
 use std::env::var;
+use std::time::SystemTime;
+
 use chrono::{DateTime, Utc};
 
 fn main() {

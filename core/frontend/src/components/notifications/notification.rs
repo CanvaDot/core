@@ -6,16 +6,19 @@ use yew::{function_component, html, use_effect_with, use_state, Callback, Html, 
 use yew_icons::{Icon, IconId};
 
 use crate::components::common::{AppButton, AppSelect, ButtonTarget};
-use crate::utils::notifications::component::{group_components, NotificationComponent, NotificationComponentKind};
-use crate::utils::types::InRef;
-use crate::utils::notifications::notification::Notification;
 use crate::utils::colors::SECONDARY_GREY;
-
+use crate::utils::notifications::component::{
+    group_components,
+    NotificationComponent,
+    NotificationComponentKind,
+};
+use crate::utils::notifications::notification::Notification;
+use crate::utils::types::InRef;
 
 #[derive(Properties, PartialEq)]
 pub struct NotificationProps {
     pub notification: InRef<Notification>,
-    pub on_close: Callback<Uuid>
+    pub on_close: Callback<Uuid>,
 }
 
 #[function_component(NotificationElement)]
@@ -34,7 +37,9 @@ pub fn notification_element(props: &NotificationProps) -> Html {
 
     {
         let notif_rc = Rc::clone(&props.notification);
-        let on_close = props.on_close.clone();
+        let on_close = props
+            .on_close
+            .clone();
 
         use_effect_with((), move |_| {
             let mut notif_borrow = notif_rc.borrow_mut();
@@ -46,7 +51,9 @@ pub fn notification_element(props: &NotificationProps) -> Html {
         });
     }
 
-    let notif_borrow = props.notification.borrow();
+    let notif_borrow = props
+        .notification
+        .borrow();
     let notif_component_groups = group_components(notif_borrow.components());
     let notif_components = notif_component_groups
         .iter()

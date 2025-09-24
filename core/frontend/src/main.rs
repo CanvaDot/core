@@ -42,8 +42,7 @@ fn main() {
         .get_element_by_id("app")
         .expect("No #app element found in index.html");
 
-    Renderer::<App>::with_root(app_node)
-        .render();
+    Renderer::<App>::with_root(app_node).render();
 }
 
 #[cfg(feature = "coverage")]

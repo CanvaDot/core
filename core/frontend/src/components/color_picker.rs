@@ -2,7 +2,6 @@ use std::rc::Rc;
 
 use gloo::storage::errors::StorageError;
 use gloo::storage::{LocalStorage, Storage};
-use gloo::timers::callback::Interval;
 use palette::rgb::channels::Rgba;
 use palette::Srgb;
 use thiserror::Error;
@@ -11,15 +10,17 @@ use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
-use crate::components::hooks::notifications::{use_notifications, NotificationHandle, ResultReport};
+use crate::components::hooks::notifications::{
+    use_notifications,
+    NotificationHandle,
+    ResultReport,
+};
 use crate::utils::color_memory::ColorMemory;
 use crate::utils::colors::{compose, decompose};
-
 
 const MAX_LAST_COLORS: usize = 5;
 const COLOR_MEMORY_KEY: &str = "color_memory";
 const LAST_COLOR_KEY: &str = "last_color";
-
 
 #[derive(Error, Debug)]
 enum ColorPickerError {
@@ -38,17 +39,17 @@ pub struct ColorPickerProps {
 
 #[function_component(ColorPicker)]
 pub fn color_picker(props: &ColorPickerProps) -> Html {
-    /* DEPENDENCY FOR COLOR TYPE */
+    // DEPENDENCY FOR COLOR TYPE
     #[derive(Clone, Copy)]
     enum ChangeSliderType {
         Brightness,
         Hue,
     }
 
-    /* NOTIFICATION HANDLE */
+    // NOTIFICATION HANDLE
     let notification_hub = use_notifications();
 
-    /* COMPONENT STATE */
+    // COMPONENT STATE
     let color_memory = use_state(|| {
         ColorMemory::from_ls(COLOR_MEMORY_KEY.into(), MAX_LAST_COLORS).or_notify(&notification_hub)
     });
@@ -63,10 +64,10 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
     });
     let picker_expanded = use_state(|| false);
 
-    /* DECOMPOSE COLOR INTO HUE AND LIGHTNESS */
+    // DECOMPOSE COLOR INTO HUE AND LIGHTNESS
     let (hue, lightness) = decompose(&*current_color);
 
-    /* WHEN DRAW IS CLICKED FORWARD TO PROP CALLBACK */
+    // WHEN DRAW IS CLICKED FORWARD TO PROP CALLBACK
     let on_draw_event = {
         let current_color = current_color.clone();
         let on_draw = props
@@ -78,7 +79,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         })
     };
 
-    /* COLOR IS PICKED FROM MEMORY EVENT */
+    // COLOR IS PICKED FROM MEMORY EVENT
     let pick_color_memory_event = |color: Srgb<u8>| {
         let current_color = current_color.clone();
         let color_memory = color_memory.clone();
@@ -96,20 +97,22 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         })
     };
 
-    /* SLIDER IS PICKED UP EVENT */
+    // SLIDER IS PICKED UP EVENT
     fn start_slider_event<T: JsCast>(
         color_memory: UseStateHandle<ColorMemory>,
         current_color: UseStateHandle<Srgb<u8>>,
-        notification_hub: Rc<NotificationHandle>
+        notification_hub: Rc<NotificationHandle>,
     ) -> Callback<T> {
         Callback::from(move |_: T| {
             let mut new_memory = (*color_memory).clone();
-            new_memory.push(*current_color).or_notify(&notification_hub);
+            new_memory
+                .push(*current_color)
+                .or_notify(&notification_hub);
             color_memory.set(new_memory);
         })
     }
 
-    /* SLIDER IS MOVED EVENT */
+    // SLIDER IS MOVED EVENT
     let update_slider_event = |ty: ChangeSliderType| {
         let current_color = current_color.clone();
         let notification_hub = notification_hub.clone();
@@ -130,18 +133,17 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         })
     };
 
-    /* SLIDER IS DROPPED DOWN EVENT */
+    // SLIDER IS DROPPED DOWN EVENT
     fn commit_slider_event<T: JsCast>(
         current_color: UseStateHandle<Srgb<u8>>,
-        notification_hub: Rc<NotificationHandle>
+        notification_hub: Rc<NotificationHandle>,
     ) -> Callback<T> {
         Callback::from(move |_| {
-            LocalStorage::set(LAST_COLOR_KEY, *current_color)
-                .or_notify(&notification_hub);
+            LocalStorage::set(LAST_COLOR_KEY, *current_color).or_notify(&notification_hub);
         })
     }
 
-    /* COLOR PICKER IS EXPANDED */
+    // COLOR PICKER IS EXPANDED
     let expand_picker_event = {
         let picker_expanded = picker_expanded.clone();
 
@@ -150,7 +152,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         })
     };
 
-    /* UPDATE COLOR FROM WRITTEN VALUES LOOP */
+    // UPDATE COLOR FROM WRITTEN VALUES LOOP
     // MAYBE COMMING SOON
     // {
     //     let current_color = current_color.clone();
@@ -165,124 +167,124 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
     // }
 
     html! {
-        <div class={classes!(&props.class, "color-picker-container")}>
-            if *picker_expanded {
-                <div class="color-picker-selector">
-//                    <div class="color-picker-selector-values">
-//                        <div>
-//                            <label>
-//                                <span>{"#"}</span>
-//                                <input
-//                                    type="text"
-//                                    value={format!("{:06X}", (*current_color).into_u32::<Rgba>() >> 8)}
-//                                />
-//                            </label>
-//                        </div>
-//                        <div>
-//                            <label>
-//                                <span>{"R"}</span>
-//                                <input
-//                                    type="number"
-//                                    value={(*current_color).red.to_string()}
-//                                />
-//                            </label>
-//                            <label>
-//                                <span>{"G"}</span>
-//                                <input
-//                                    type="number"
-//                                    value={(*current_color).green.to_string()}
-//                                />
-//                            </label>
-//                            <label>
-//                                <span>{"B"}</span>
-//                                <input
-//                                    type="number"
-//                                    value={(*current_color).blue.to_string()}
-//                                />
-//                            </label>
-//                        </div>
-//                    </div>
-                    <div class="color-picker-selector-sliders">
-                        <input
-                            type="range"
-                            value={hue.to_string()}
-                            min="0"
-                            max="350"
-                            style={format!("--brightness: {}%", lightness)}
+            <div class={classes!(&props.class, "color-picker-container")}>
+                if *picker_expanded {
+                    <div class="color-picker-selector">
+    //                    <div class="color-picker-selector-values">
+    //                        <div>
+    //                            <label>
+    //                                <span>{"#"}</span>
+    //                                <input
+    //                                    type="text"
+    //                                    value={format!("{:06X}", (*current_color).into_u32::<Rgba>() >> 8)}
+    //                                />
+    //                            </label>
+    //                        </div>
+    //                        <div>
+    //                            <label>
+    //                                <span>{"R"}</span>
+    //                                <input
+    //                                    type="number"
+    //                                    value={(*current_color).red.to_string()}
+    //                                />
+    //                            </label>
+    //                            <label>
+    //                                <span>{"G"}</span>
+    //                                <input
+    //                                    type="number"
+    //                                    value={(*current_color).green.to_string()}
+    //                                />
+    //                            </label>
+    //                            <label>
+    //                                <span>{"B"}</span>
+    //                                <input
+    //                                    type="number"
+    //                                    value={(*current_color).blue.to_string()}
+    //                                />
+    //                            </label>
+    //                        </div>
+    //                    </div>
+                        <div class="color-picker-selector-sliders">
+                            <input
+                                type="range"
+                                value={hue.to_string()}
+                                min="0"
+                                max="350"
+                                style={format!("--brightness: {}%", lightness)}
 
-                            onmousedown={start_slider_event(
-                                color_memory.clone(),
-                                current_color.clone(),
-                                notification_hub.clone()
-                            )}
-                            ontouchstart={start_slider_event(
-                                color_memory.clone(),
-                                current_color.clone(),
-                                notification_hub.clone()
-                            )}
-                            oninput={update_slider_event(ChangeSliderType::Hue)}
-                            onmouseup={commit_slider_event(
-                                current_color.clone(),
-                                notification_hub.clone()
-                            )}
-                            ontouchend={commit_slider_event(
-                                current_color.clone(),
-                                notification_hub.clone()
-                            )}
-                        />
-                        <input
-                            type="range"
-                            value={lightness.to_string()}
-                            min="1"
-                            max="99"
-                            onmousedown={start_slider_event(
-                                color_memory.clone(),
-                                current_color.clone(),
-                                notification_hub.clone()
-                            )}
-                            ontouchstart={start_slider_event(
-                                color_memory.clone(),
-                                current_color.clone(),
-                                notification_hub.clone()
-                            )}
-                            oninput={update_slider_event(ChangeSliderType::Brightness)}
-                            onmouseup={commit_slider_event(
-                                current_color.clone(),
-                                notification_hub.clone()
-                            )}
-                            ontouchend={commit_slider_event(
-                                current_color.clone(),
-                                notification_hub.clone()
-                            )}
-                        />
+                                onmousedown={start_slider_event(
+                                    color_memory.clone(),
+                                    current_color.clone(),
+                                    notification_hub.clone()
+                                )}
+                                ontouchstart={start_slider_event(
+                                    color_memory.clone(),
+                                    current_color.clone(),
+                                    notification_hub.clone()
+                                )}
+                                oninput={update_slider_event(ChangeSliderType::Hue)}
+                                onmouseup={commit_slider_event(
+                                    current_color.clone(),
+                                    notification_hub.clone()
+                                )}
+                                ontouchend={commit_slider_event(
+                                    current_color.clone(),
+                                    notification_hub.clone()
+                                )}
+                            />
+                            <input
+                                type="range"
+                                value={lightness.to_string()}
+                                min="1"
+                                max="99"
+                                onmousedown={start_slider_event(
+                                    color_memory.clone(),
+                                    current_color.clone(),
+                                    notification_hub.clone()
+                                )}
+                                ontouchstart={start_slider_event(
+                                    color_memory.clone(),
+                                    current_color.clone(),
+                                    notification_hub.clone()
+                                )}
+                                oninput={update_slider_event(ChangeSliderType::Brightness)}
+                                onmouseup={commit_slider_event(
+                                    current_color.clone(),
+                                    notification_hub.clone()
+                                )}
+                                ontouchend={commit_slider_event(
+                                    current_color.clone(),
+                                    notification_hub.clone()
+                                )}
+                            />
+                        </div>
                     </div>
-                </div>
-            }
+                }
 
-            <button
-                class="color-picker-paint color-picker-after"
-                onclick={on_draw_event}
-                style={format!("background-color: #{:08X}", current_color.into_u32::<Rgba>())}
-            >
-                <Icon icon_id={IconId::FontAwesomeSolidPaintbrush} />
-            </button>
-            <div class="color-picker-colors">
                 <button
-                    class="color-picker-toggle-selector"
-                    onclick={expand_picker_event}
+                    class="color-picker-paint color-picker-after"
+                    onclick={on_draw_event}
+                    style={format!("background-color: #{:08X}", current_color.into_u32::<Rgba>())}
                 >
+                    <Icon icon_id={IconId::FontAwesomeSolidPaintbrush} />
                 </button>
-                { for (*color_memory).iter().map(|color| {
-                    html! {
-                        <button
-                            style={ format!("background-color: #{:08X}", color.into_u32::<Rgba>()) }
-                            class="color-picker-color"
-                            onclick={pick_color_memory_event(color.clone())}
-                        >
-                        </button>
-                    }
-                }) }
+                <div class="color-picker-colors">
+                    <button
+                        class="color-picker-toggle-selector"
+                        onclick={expand_picker_event}
+                    >
+                    </button>
+                    { for (*color_memory).iter().map(|color| {
+                        html! {
+                            <button
+                                style={ format!("background-color: #{:08X}", color.into_u32::<Rgba>()) }
+                                class="color-picker-color"
+                                onclick={pick_color_memory_event(color.clone())}
+                            >
+                            </button>
+                        }
+                    }) }
+                </div>
             </div>
-        </div>
-    }
+        }
 }

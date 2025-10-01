@@ -2,7 +2,6 @@ use palette::Srgb;
 
 use crate::utils::colors::{compose, contrasting_bw, decompose, luminance};
 
-
 #[test]
 fn test_decompose_basic_colors() {
     // Red

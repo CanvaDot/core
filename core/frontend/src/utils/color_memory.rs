@@ -1,3 +1,5 @@
+#![cfg(not(feature = "coverage"))] // because it's tied to wasm32.
+
 use std::slice::Iter;
 
 use gloo::storage::errors::StorageError;

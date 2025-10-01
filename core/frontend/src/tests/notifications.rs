@@ -1,15 +1,23 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use tokio::{test as async_test, time::sleep};
 use instant::Duration;
+use tokio::test as async_test;
+use tokio::time::sleep;
 use uuid::Version as UuidVersion;
 use yew::Callback;
 
 use crate::utils::colors::{ERROR_RED, INFO_BLUE, SUCCESS_GREEN};
-use crate::utils::notifications::store::NotificationStore;
+use crate::utils::notifications::component::{
+    group_components,
+    ActionButton,
+    Dropdown,
+    NotificationComponent,
+    NotificationComponentKind,
+    RedirectButton,
+};
 use crate::utils::notifications::notification::{Notification, NotificationLevel};
-use crate::utils::notifications::component::{group_components, ActionButton, Dropdown, NotificationComponent, NotificationComponentKind, RedirectButton};
+use crate::utils::notifications::store::NotificationStore;
 use crate::utils::types::InRef;
 
 #[async_test]
@@ -21,31 +29,57 @@ async fn test_notification_store() {
             .title("test")
             .message("test")
             .duration(Duration::from_secs(1))
-            .build()
+            .build(),
     );
 
-    assert_eq!(store.all().borrow().len(), 1);
+    assert_eq!(
+        store
+            .all()
+            .borrow()
+            .len(),
+        1
+    );
 
     sleep(Duration::from_secs(2)).await;
 
     store.remove_expired();
 
-    assert_eq!(store.all().borrow().len(), 0);
+    assert_eq!(
+        store
+            .all()
+            .borrow()
+            .len(),
+        0
+    );
 
     let notification = Notification::builder()
         .title("test")
         .message("test")
         .build();
 
-    let notification_id = notification.id().clone();
+    let notification_id = notification
+        .id()
+        .clone();
 
     store.add(notification);
 
-    assert_eq!(store.all().borrow().len(), 1);
+    assert_eq!(
+        store
+            .all()
+            .borrow()
+            .len(),
+        1
+    );
 
     store.remove_by_id(notification_id);
 
-    assert_eq!(store.all().borrow().len(), 0);
+    assert_eq!(
+        store
+            .all()
+            .borrow()
+            .len(),
+        0
+    );
 }
 
 #[test]
@@ -62,7 +96,7 @@ fn test_notification_builders() {
                 .target("/")
                 .kind(NotificationComponentKind::Primary)
                 .enabled(false)
-                .build()
+                .build(),
         )
         .add_action_button(
             ActionButton::builder()
@@ -75,7 +109,7 @@ fn test_notification_builders() {
                 })
                 .kind(NotificationComponentKind::Secondary)
                 .enabled(true)
-                .build()
+                .build(),
         )
         .add_dropdown(
             Dropdown::builder()
@@ -85,16 +119,21 @@ fn test_notification_builders() {
                 .on_change(|notification: InRef<Notification>| {
                     let notification = notification.borrow();
 
-                    if let Some(NotificationComponent::Dropdown(dropdown))
-                        = notification .get_component("test_dropdown") {
-
-                        assert_eq!(*dropdown.current_value().borrow(), "test");
+                    if let Some(NotificationComponent::Dropdown(dropdown)) =
+                        notification.get_component("test_dropdown")
+                    {
+                        assert_eq!(
+                            *dropdown
+                                .current_value()
+                                .borrow(),
+                            "test"
+                        );
                     } else {
                         unreachable!("The dropdown does not exist or is not a Dropdown.")
                     }
                 })
                 .enabled(true)
-                .build()
+                .build(),
         )
         .build();
 
@@ -104,7 +143,12 @@ fn test_notification_builders() {
         let notification = notification.clone();
         let notification_borrow = notification.borrow();
 
-        assert_eq!(notification_borrow.id().get_version(), Some(UuidVersion::Random));
+        assert_eq!(
+            notification_borrow
+                .id()
+                .get_version(),
+            Some(UuidVersion::Random)
+        );
         assert_eq!(notification_borrow.level(), NotificationLevel::Info);
         assert_eq!(notification_borrow.title(), "test");
         assert_eq!(notification_borrow.message(), "test");
@@ -143,7 +187,9 @@ fn test_notification_builders() {
             assert_eq!(button.text(), "test");
             assert_eq!(button.kind(), NotificationComponentKind::Secondary);
             assert!(button.enabled());
-            let action = button.action().clone();
+            let action = button
+                .action()
+                .clone();
 
             drop(notification_borrow);
 
@@ -167,12 +213,19 @@ fn test_notification_builders() {
 
         if let NotificationComponent::Dropdown(dropdown) = dropdown {
             assert_eq!(dropdown.id(), "test_dropdown");
-            assert_eq!(dropdown.values().len(), 1);
+            assert_eq!(
+                dropdown
+                    .values()
+                    .len(),
+                1
+            );
             assert_eq!(dropdown.default(), 0);
             assert!(dropdown.enabled());
 
             dropdown.set_current_value("test".into());
-            dropdown.on_change().emit(notification.clone());
+            dropdown
+                .on_change()
+                .emit(notification.clone());
         } else {
             unreachable!("Dropdown is not a Dropdown");
         }
@@ -189,18 +242,18 @@ fn test_default_builder_options() {
                 .text("test")
                 .id("test_redirect_button")
                 .target("/")
-                .build()
+                .build(),
         )
         .add_action_button(
             ActionButton::builder()
                 .text("test")
                 .id("test_action_button")
-                .build()
+                .build(),
         )
         .add_dropdown(
             Dropdown::builder()
                 .id("test_dropdown")
-                .build()
+                .build(),
         )
         .build();
 
@@ -210,7 +263,12 @@ fn test_default_builder_options() {
         let notification = notification.clone();
         let notification_borrow = notification.borrow();
 
-        assert_eq!(notification_borrow.id().get_version(), Some(UuidVersion::Random));
+        assert_eq!(
+            notification_borrow
+                .id()
+                .get_version(),
+            Some(UuidVersion::Random)
+        );
         assert_eq!(notification_borrow.level(), NotificationLevel::Info);
         assert_eq!(notification_borrow.title(), "test");
         assert_eq!(notification_borrow.message(), "test");
@@ -245,7 +303,9 @@ fn test_default_builder_options() {
             .expect("Test Button to Exist.");
 
         if let NotificationComponent::ActionButton(button) = action_button {
-            let action = button.action().clone();
+            let action = button
+                .action()
+                .clone();
             action.emit(notification.clone()); // nothing should change in this case.
 
             assert_eq!(button.id(), "test_action_button");
@@ -267,7 +327,12 @@ fn test_default_builder_options() {
 
         if let NotificationComponent::Dropdown(dropdown) = dropdown {
             assert_eq!(dropdown.id(), "test_dropdown");
-            assert_eq!(dropdown.values().len(), 0);
+            assert_eq!(
+                dropdown
+                    .values()
+                    .len(),
+                0
+            );
             assert_eq!(dropdown.default(), 0);
             assert!(dropdown.enabled());
         } else {
@@ -302,7 +367,6 @@ fn test_setters() {
         )
         .build();
 
-
     let notification = Rc::new(RefCell::new(notification));
 
     {
@@ -313,7 +377,12 @@ fn test_setters() {
         notification_borrow.set_message("test".into());
         notification_borrow.set_level(NotificationLevel::Info);
 
-        assert_eq!(notification_borrow.id().get_version(), Some(UuidVersion::Random));
+        assert_eq!(
+            notification_borrow
+                .id()
+                .get_version(),
+            Some(UuidVersion::Random)
+        );
         assert_eq!(notification_borrow.level(), NotificationLevel::Info);
         assert_eq!(notification_borrow.title(), "test");
         assert_eq!(notification_borrow.message(), "test");
@@ -376,14 +445,17 @@ fn test_setters() {
 
         if let NotificationComponent::Dropdown(dropdown) = dropdown {
             dropdown.set_enabled(true);
-            dropdown.set_values(vec![
-                ("test".into(), "test".into())
-            ]);
+            dropdown.set_values(vec![("test".into(), "test".into())]);
             dropdown.set_default(0);
             dropdown.set_enabled(true);
 
             assert_eq!(dropdown.id(), "test_dropdown");
-            assert_eq!(dropdown.values().len(), 1);
+            assert_eq!(
+                dropdown
+                    .values()
+                    .len(),
+                1
+            );
             assert_eq!(dropdown.default(), 0);
             assert!(dropdown.enabled());
         } else {
@@ -401,22 +473,19 @@ fn test_group_components() {
             RedirectButton::builder()
                 .text("test")
                 .target("/")
-                .build()
+                .build(),
         )
         .add_redirect_button(
             RedirectButton::builder()
                 .text("test2")
                 .target("/")
-                .build()
+                .build(),
         )
-        .add_dropdown(
-            Dropdown::builder()
-                .build()
-        )
+        .add_dropdown(Dropdown::builder().build())
         .add_action_button(
             ActionButton::builder()
                 .text("test3")
-                .build()
+                .build(),
         )
         .build();
 

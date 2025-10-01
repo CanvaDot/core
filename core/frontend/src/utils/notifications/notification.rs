@@ -110,6 +110,21 @@ impl Notification {
         self.on_close
             .emit(());
     }
+
+    #[inline]
+    pub fn set_title(&mut self, title: String) {
+        self.title = title;
+    }
+
+    #[inline]
+    pub fn set_message(&mut self, message: String) {
+        self.message = message;
+    }
+
+    #[inline]
+    pub fn set_level(&mut self, level: NotificationLevel) {
+        self.level = level;
+    }
 }
 
 impl NotificationLevel {

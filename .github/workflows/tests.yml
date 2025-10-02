@@ -29,11 +29,11 @@ jobs:
 
 
       - name: Run Code Lint Checks And Tests
-        run: just test code fmt clippy;
+        run: DEBUG="${{ runner.debug }}" just test code fmt clippy;
 
 
       - name: Check Code Coverage
-        run: just coverage "./coverage.lcov";
+        run: DEBUG="${{ runner.debug }}" just coverage "./coverage.lcov";
 
 
       - name: Upload Coverage

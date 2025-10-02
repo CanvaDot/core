@@ -37,6 +37,8 @@ pub struct ColorPickerProps {
     pub on_draw: Callback<Srgb<u8>>,
 }
 
+// TODO: Add num_traits.
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 #[function_component(ColorPicker)]
 pub fn color_picker(props: &ColorPickerProps) -> Html {
     // DEPENDENCY FOR COLOR TYPE
@@ -66,7 +68,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
     let picker_pinned = use_state(|| false);
 
     // DECOMPOSE COLOR INTO HUE AND LIGHTNESS
-    let (hue, lightness) = decompose(&*current_color);
+    let (hue, lightness) = decompose(*current_color);
 
     // WHEN DRAW IS CLICKED FORWARD TO PROP CALLBACK
     let on_draw_event = {
@@ -192,10 +194,10 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                             <span class="cps-extra-format">
                                 {format!(
                                     "rgb({}, {}, {}) - #{:06X}",
-                                    (*current_color).red,
-                                    (*current_color).green,
-                                    (*current_color).blue,
-                                    (*current_color).into_u32::<Rgba>() >> 8
+                                    current_color.red,
+                                    current_color.green,
+                                    current_color.blue,
+                                    current_color.into_u32::<Rgba>() >> 8
                                 )}
                             </span>
                             <div class="cps-extra-utils">
@@ -250,7 +252,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                                 value={hue.to_string()}
                                 min="0"
                                 max="350"
-                                style={format!("--brightness: {}%", lightness)}
+                                style={format!("--brightness: {lightness}%")}
 
                                 onmousedown={start_slider_event(
                                     color_memory.clone(),
@@ -327,7 +329,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                             <button
                                 style={ format!("background-color: #{:08X}", color.into_u32::<Rgba>()) }
                                 class="color-picker-color"
-                                onclick={pick_color_memory_event(color.clone())}
+                                onclick={pick_color_memory_event(*color)}
                             >
                             </button>
                         }

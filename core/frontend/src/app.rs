@@ -20,7 +20,7 @@ pub struct AppContext {
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let app_context = use_state(|| AppContext::default());
+    let app_context = use_state(AppContext::default);
     let notification_hub = use_notifications();
 
     let on_draw = {
@@ -29,9 +29,7 @@ pub fn app() -> Html {
         })
     };
 
-    if env!("CANVADOT_PROFILE") == "DEBUG".to_string()
-        && LocalStorage::get("remind_build").unwrap_or(1) == 1
-    {
+    if env!("CANVADOT_PROFILE") == "DEBUG" && LocalStorage::get("remind_build").unwrap_or(1) == 1 {
         let notification_hub = notification_hub.clone();
 
         app_context

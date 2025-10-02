@@ -36,7 +36,7 @@ pub fn notification_hub(props: &NotificationHubProps) -> Html {
     {
         let notifications = notifications.clone();
 
-        use_effect_with((), |_| {
+        use_effect_with((), |()| {
             let interval = Interval::new(500, move || {
                 notifications
                     .borrow()
@@ -47,7 +47,7 @@ pub fn notification_hub(props: &NotificationHubProps) -> Html {
             || {
                 interval.cancel();
             }
-        })
+        });
     }
 
     let on_close_notification = {
@@ -69,7 +69,7 @@ pub fn notification_hub(props: &NotificationHubProps) -> Html {
         <aside class={classes!(&props.class, "notification-hub")} aria-live="polite">
             {for all_notifs.iter().map(|notification| html! {
                 <NotificationElement
-                    notification={Rc::clone(&notification)}
+                    notification={Rc::clone(notification)}
                     on_close={&on_close_notification}
                 />
             })}

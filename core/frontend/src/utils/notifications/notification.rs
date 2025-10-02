@@ -38,7 +38,7 @@ pub struct Notification {
 
     #[builder(skip = Uuid::new_v4())]
     id: Uuid,
-    #[builder(into, default = |_| {})]
+    #[builder(into, default = |()| {})]
     on_close: Callback<()>,
 }
 
@@ -82,7 +82,7 @@ impl Notification {
             .on_close
             .clone();
 
-        self.on_close = Callback::from(move |_| {
+        self.on_close = Callback::from(move |()| {
             callback.emit(());
             orig_on_close.emit(());
         });
@@ -129,7 +129,7 @@ impl Notification {
 
 impl NotificationLevel {
     #[inline]
-    pub const fn to_color(&self) -> Srgb<u8> {
+    pub const fn to_color(self) -> Srgb<u8> {
         match self {
             NotificationLevel::Info => INFO_BLUE,
             NotificationLevel::Success => SUCCESS_GREEN,

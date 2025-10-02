@@ -21,7 +21,7 @@ impl NotificationStore {
     pub fn add(&self, notification: Notification) {
         self.notifications
             .borrow_mut()
-            .push(Rc::new(RefCell::new(notification)))
+            .push(Rc::new(RefCell::new(notification)));
     }
 
     pub fn remove_expired(&self) {

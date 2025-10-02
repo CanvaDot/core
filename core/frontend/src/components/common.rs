@@ -63,13 +63,13 @@ pub fn app_button(props: &ButtonProps) -> Html {
             ButtonTarget::Link(link) => {
                 window()
                     .location()
-                    .set_href(&link)
+                    .set_href(link)
                     .expect("To redirect.");
             },
         })
     };
 
-    let text_color = contrasting_bw(&props.color);
+    let text_color = contrasting_bw(props.color);
 
     html! {
         <button
@@ -127,8 +127,8 @@ pub fn app_select(props: &DropdownProps) -> Html {
                     - 1,
                 props.default,
             ))
-            .map(|(key, _)| key.to_string())
-            .unwrap_or(String::new())
+            .map(|(key, _)| key.clone())
+            .unwrap_or_default()
     });
 
     let on_click = |key: String, value: String| {
@@ -147,7 +147,7 @@ pub fn app_select(props: &DropdownProps) -> Html {
         let expanded = expanded.clone();
         let trigger_ref = trigger_ref.clone();
 
-        use_effect_with((*expanded).clone(), move |is_expanded| {
+        use_effect_with(*expanded, move |is_expanded| {
             if *is_expanded {
                 let listener = EventListener::new(&document(), "click", move |event| {
                     if let (Some(target), Some(trigger)) = (
@@ -172,7 +172,7 @@ pub fn app_select(props: &DropdownProps) -> Html {
             } else {
                 Box::new(|| ()) as Box<dyn FnOnce()>
             }
-        })
+        });
     }
 
     let expand = {
@@ -190,8 +190,8 @@ pub fn app_select(props: &DropdownProps) -> Html {
             html! {
                 <div
                     onclick={on_click(
-                        key.to_string(),
-                        value.to_string()
+                        key.clone(),
+                        value.clone()
                     )}
                 >
                     <span>{key}</span>
@@ -205,14 +205,14 @@ pub fn app_select(props: &DropdownProps) -> Html {
         let notification_hub = notification_hub.clone();
         let trigger_ref = trigger_ref.clone();
 
-        use_effect_with((*expanded).clone(), move |expanded| {
+        use_effect_with(*expanded, move |expanded| {
             if *expanded {
                 if let Some(element) = trigger_ref.cast::<Element>() {
                     let window = window();
                     let rect = element.get_bounding_client_rect();
 
                     let style = format!(
-                        r#"
+                        r"
                             position: absolute;
 
                             top: {}px;
@@ -221,16 +221,16 @@ pub fn app_select(props: &DropdownProps) -> Html {
                             width: {}px;
 
                             z-index: 100;
-                        "#,
+                        ",
                         2.0 + rect.bottom()
                             + window
                                 .scroll_y()
-                                .map_err(|error| CommonElementError::MissingCordinate(error))
+                                .map_err(CommonElementError::MissingCordinate)
                                 .or_notify(&notification_hub),
                         rect.left()
                             + window
                                 .scroll_x()
-                                .map_err(|error| CommonElementError::MissingCordinate(error))
+                                .map_err(CommonElementError::MissingCordinate)
                                 .or_notify(&notification_hub),
                         rect.width()
                     );

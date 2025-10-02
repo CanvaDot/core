@@ -25,6 +25,8 @@ pub struct ColorMemory {
 }
 
 impl ColorMemory {
+    // TODO: Add num_traits.
+    #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
     fn fill(memory: &mut Vec<Srgb<u8>>, max_size: usize) {
         const HSV_SATURATION: f32 = 0.9;
         const HSV_VALUE: f32 = 0.9;
@@ -39,7 +41,7 @@ impl ColorMemory {
             let hue = slot as f32 * hue_step;
             let hsv = Hsv::new(hue, HSV_SATURATION, HSV_VALUE);
             let rgb = Srgb::<f32>::from_color(hsv);
-            memory.push(rgb.into_format())
+            memory.push(rgb.into_format());
         }
     }
 

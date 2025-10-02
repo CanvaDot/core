@@ -227,28 +227,32 @@ impl Dropdown {
 }
 
 impl<S: dropdown_builder::State> DropdownBuilder<S> {
-    pub fn add_value(mut self, key: impl ToString, value: impl ToString) -> Self {
+    pub fn add_value<K: ToString + ?Sized, V: ToString + ?Sized>(
+        mut self,
+        key: &K,
+        value: &V,
+    ) -> Self {
         self.values
             .push((key.to_string(), value.to_string()));
         self
     }
 }
 
-impl Into<NotificationComponent> for RedirectButton {
-    fn into(self) -> NotificationComponent {
-        NotificationComponent::RedirectButton(self)
+impl From<RedirectButton> for NotificationComponent {
+    fn from(val: RedirectButton) -> Self {
+        NotificationComponent::RedirectButton(val)
     }
 }
 
-impl Into<NotificationComponent> for ActionButton {
-    fn into(self) -> NotificationComponent {
-        NotificationComponent::ActionButton(self)
+impl From<ActionButton> for NotificationComponent {
+    fn from(val: ActionButton) -> Self {
+        NotificationComponent::ActionButton(val)
     }
 }
 
-impl Into<NotificationComponent> for Dropdown {
-    fn into(self) -> NotificationComponent {
-        NotificationComponent::Dropdown(self)
+impl From<Dropdown> for NotificationComponent {
+    fn from(val: Dropdown) -> Self {
+        NotificationComponent::Dropdown(val)
     }
 }
 

@@ -41,11 +41,11 @@ pub fn notification_element(props: &NotificationProps) -> Html {
             .on_close
             .clone();
 
-        use_effect_with((), move |_| {
+        use_effect_with((), move |()| {
             let mut notif_borrow = notif_rc.borrow_mut();
             let id = notif_borrow.id();
 
-            notif_borrow.hook_close(Callback::from(move |_| {
+            notif_borrow.hook_close(Callback::from(move |()| {
                 on_close.emit(id);
             }));
         });

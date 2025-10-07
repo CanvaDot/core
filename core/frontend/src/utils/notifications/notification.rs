@@ -2,7 +2,6 @@ use bon::Builder;
 use instant::{Duration, Instant};
 use palette::Srgb;
 use uuid::Uuid;
-use yew::{Callback, Properties};
 
 use crate::utils::colors::{ERROR_RED, INFO_BLUE, SUCCESS_GREEN};
 use crate::utils::notifications::component::{
@@ -11,6 +10,7 @@ use crate::utils::notifications::component::{
     NotificationComponent,
     RedirectButton,
 };
+use crate::utils::types::AtomicCallback;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum NotificationLevel {
@@ -39,7 +39,7 @@ pub struct Notification {
     #[builder(skip = Uuid::new_v4())]
     id: Uuid,
     #[builder(into, default = |()| {})]
-    on_close: Callback<()>,
+    on_close: AtomicCallback<()>,
 }
 
 impl Notification {
@@ -77,12 +77,12 @@ impl Notification {
         self.duration
     }
 
-    pub fn hook_close(&mut self, callback: Callback<()>) {
+    pub fn hook_close(&mut self, callback: AtomicCallback<()>) {
         let orig_on_close = self
             .on_close
             .clone();
 
-        self.on_close = Callback::from(move |()| {
+        self.on_close = AtomicCallback::from(move |()| {
             callback.emit(());
             orig_on_close.emit(());
         });

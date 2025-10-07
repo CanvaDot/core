@@ -1,52 +1,44 @@
-use std::cell::RefCell;
-use std::error::Error;
-use std::rc::Rc;
-use std::slice::Iter;
+use std::sync::{Condvar, Mutex, OnceLock};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
-use instant::{Duration, Instant};
-use palette::Srgb;
-use uuid::Uuid;
-use yew::{Callback, Properties};
 
-use crate::utils::colors::{ERROR_RED, INFO_BLUE, SUCCESS_GREEN};
 use crate::utils::notifications::notification::Notification;
-use crate::utils::types::InRef;
 
-#[derive(Default, PartialEq)]
-pub struct NotificationStore {
-    notifications: InRef<Vec<InRef<Notification>>>,
+struct NotificationReadyState {
+    ready: Mutex<bool>,
+    condvar: Condvar
 }
 
-impl NotificationStore {
-    pub fn add(&self, notification: Notification) {
-        self.notifications
-            .borrow_mut()
-            .push(Rc::new(RefCell::new(notification)));
+static READY: NotificationReadyState = NotificationReadyState {
+    ready: Mutex::new(false),
+    condvar: Condvar::new()
+};
+
+static SENDER: OnceLock<Sender<Notification>> = OnceLock::new();
+
+pub async fn start_listening_notifications() -> Option<Receiver<Notification>> {
+    let (tx, rx) = channel();
+
+    if SENDER.set(tx).is_ok() {
+        let mut ready = READY.ready.lock()
+            .expect("Notification listener to have an unpoisoned mutex available.");
+        *ready = true;
+        READY.condvar.notify_all();
+        Some(rx)
+    } else {
+        None
+    }
+}
+
+pub fn send_notification(notification: Notification) {
+    let mut ready = READY.ready.lock()
+        .expect("Notification listener to have an unpoisoned mutex available.");
+    while !*ready {
+        ready = READY.condvar.wait(ready)
+            .expect("Notification listener to have an unpoisoned mutex available.");
     }
 
-    pub fn remove_expired(&self) {
-        self.notifications
-            .borrow_mut()
-            .retain(|notification| {
-                !notification
-                    .borrow()
-                    .is_expired()
-            });
-    }
-
-    pub fn all(&self) -> InRef<Vec<InRef<Notification>>> {
-        self.notifications
-            .clone()
-    }
-
-    pub fn remove_by_id(&self, id: Uuid) {
-        self.notifications
-            .borrow_mut()
-            .retain(|notification| {
-                notification
-                    .borrow()
-                    .id()
-                    != id
-            });
+    if let Some(sender) = SENDER.get() {
+        let _ = sender.send(notification);
     }
 }

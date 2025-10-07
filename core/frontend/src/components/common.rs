@@ -10,7 +10,6 @@ use web_sys::{Element, Node};
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
 
-use crate::components::hooks::notifications::{use_notifications, ResultReport};
 use crate::utils::colors::{contrasting_bw, INFO_BLUE};
 
 #[derive(Error, Debug)]
@@ -116,7 +115,6 @@ pub fn app_select(props: &DropdownProps) -> Html {
     let expanded = use_state(|| false);
     let portal_style = use_state(|| None);
     let trigger_ref = use_node_ref();
-    let notification_hub = use_notifications();
     let selected_key = use_state(|| {
         props
             .values
@@ -202,7 +200,6 @@ pub fn app_select(props: &DropdownProps) -> Html {
     {
         let portal_style = portal_style.clone();
         let expanded = expanded.clone();
-        let notification_hub = notification_hub.clone();
         let trigger_ref = trigger_ref.clone();
 
         use_effect_with(*expanded, move |expanded| {
@@ -226,12 +223,12 @@ pub fn app_select(props: &DropdownProps) -> Html {
                             + window
                                 .scroll_y()
                                 .map_err(CommonElementError::MissingCordinate)
-                                .or_notify(&notification_hub),
+                                .unwrap(),
                         rect.left()
                             + window
                                 .scroll_x()
                                 .map_err(CommonElementError::MissingCordinate)
-                                .or_notify(&notification_hub),
+                                .unwrap(),
                         rect.width()
                     );
 
@@ -245,7 +242,7 @@ pub fn app_select(props: &DropdownProps) -> Html {
         let host = document()
             .get_element_by_id("tooltip-portal")
             .ok_or(CommonElementError::MissingElement("#tooltip-portal".into()))
-            .or_notify(&notification_hub);
+            .unwrap();
 
         create_portal(
             html! {

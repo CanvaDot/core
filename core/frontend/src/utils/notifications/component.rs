@@ -1,9 +1,12 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use bon::Builder;
 use itertools::Itertools;
 use yew::Callback;
 
 use crate::utils::notifications::notification::Notification;
-use crate::utils::types::InRef;
+use crate::utils::types::{AtomicCallback, AtomicInRef, InRef};
 
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum NotificationComponentKind {
@@ -41,7 +44,7 @@ pub struct ActionButton {
     #[builder(into)]
     text: String,
     #[builder(into, default = |_| {})]
-    action: Callback<InRef<Notification>>,
+    action: AtomicCallback<AtomicInRef<Notification>>,
     #[builder(default = true)]
     enabled: bool,
 
@@ -54,7 +57,7 @@ pub struct Dropdown {
     #[builder(field)]
     values: Vec<(String, String)>,
     #[builder(field)]
-    current_value: InRef<String>,
+    current_value: String,
 
     #[builder(default = 0)]
     default: usize,
@@ -62,7 +65,7 @@ pub struct Dropdown {
     enabled: bool,
 
     #[builder(into, default = |_| {})]
-    on_change: Callback<InRef<Notification>>,
+    on_change: AtomicCallback<AtomicInRef<Notification>>,
 
     #[builder(into, default = "")]
     id: String,
@@ -133,7 +136,7 @@ impl ActionButton {
     }
 
     #[inline]
-    pub fn action(&self) -> &Callback<InRef<Notification>> {
+    pub fn action(&self) -> &AtomicCallback<AtomicInRef<Notification>> {
         &self.action
     }
 
@@ -181,7 +184,7 @@ impl Dropdown {
     }
 
     #[inline]
-    pub fn on_change(&self) -> &Callback<InRef<Notification>> {
+    pub fn on_change(&self) -> &AtomicCallback<AtomicInRef<Notification>> {
         &self.on_change
     }
 
@@ -196,9 +199,8 @@ impl Dropdown {
     }
 
     #[inline]
-    pub fn current_value(&self) -> InRef<String> {
-        self.current_value
-            .clone()
+    pub fn current_value(&self) -> &str {
+        &self.current_value
     }
 
     #[inline]
@@ -216,10 +218,8 @@ impl Dropdown {
         self.enabled = enabled;
     }
 
-    pub fn set_current_value(&self, value: String) {
-        *self
-            .current_value
-            .borrow_mut() = value;
+    pub fn set_current_value(&mut self, value: String) {
+        self.current_value = value;
     }
 }
 

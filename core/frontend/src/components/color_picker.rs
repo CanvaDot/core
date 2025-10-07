@@ -48,12 +48,9 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         Hue,
     }
 
-    // NOTIFICATION HANDLE
-    let notification_hub = use_notifications();
-
     // COMPONENT STATE
     let color_memory = use_state(|| {
-        ColorMemory::from_ls(COLOR_MEMORY_KEY.into(), MAX_LAST_COLORS).or_notify(&notification_hub)
+        ColorMemory::from_ls(COLOR_MEMORY_KEY.into(), MAX_LAST_COLORS).unwrap()
     });
     let current_color = use_state(|| {
         LocalStorage::get(LAST_COLOR_KEY)
@@ -61,7 +58,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
                 StorageError::KeyNotFound(_) => Ok(None),
                 error => Err(error),
             })
-            .or_notify(&notification_hub)
+            .unwrap()
             .unwrap_or(Srgb::new(0, 105, 255))
     });
     let picker_expanded = use_state(|| false);

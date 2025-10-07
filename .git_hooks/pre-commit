@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # ASCII FILE CHECKING
 
@@ -31,7 +31,7 @@ EOF
 	exit 1
 fi
 
-exec git diff-index --check --cached $against --
+git diff-index --check --cached $against --
 
 # TESTS PASSING CHECK
 
@@ -59,7 +59,7 @@ In the case of having another executable name run
 Otherwise, if you want to disable the use of just
 
 	git config hooks.justignore true
-	EOF;
+EOF
 
 	exit 1;
 fi
@@ -78,7 +78,7 @@ a pull request unless this is mitigated.
 
 It is recommended to not make "apply cargo fmt" commits as these will be required
 to be squashed.
-	EOF;
+EOF
 
 	exit 1;
 fi

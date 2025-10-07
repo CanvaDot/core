@@ -9,7 +9,7 @@ hide_stderr := if env("DEBUG", "0") == "1" { "" } else { "2>/dev/null" }
 
 
 @setup:
-	git config core.hooksPath .git_hooks;
+	git config --local core.hooksPath .git_hooks
 
 
 @dev:

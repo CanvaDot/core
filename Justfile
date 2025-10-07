@@ -8,6 +8,10 @@ hide_stderr := if env("DEBUG", "0") == "1" { "" } else { "2>/dev/null" }
 	just --list;
 
 
+@setup:
+	git config core.hooksPath .git_hooks;
+
+
 @dev:
 	#!/bin/bash
 	set -e;

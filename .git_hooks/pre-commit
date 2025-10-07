@@ -1,0 +1,84 @@
+#!/bin/sh
+
+# ASCII FILE CHECKING
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	against=$(git hash-object -t tree /dev/null)
+fi
+
+allownonascii=$(git config --type=bool hooks.allownonascii)
+
+exec 1>&2
+
+if [ "$allownonascii" != "true" ] &&
+	test $(git diff-index --cached --name-only --diff-filter=A -z $against |
+	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
+then
+	cat <<\EOF
+Error: Attempt to add a non-ASCII file name.
+
+This can cause problems if you want to work with people on other platforms.
+
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+
+	git config hooks.allownonascii true
+EOF
+	exit 1
+fi
+
+exec git diff-index --check --cached $against --
+
+# TESTS PASSING CHECK
+
+if [[ $justignore == "true" ]]
+then
+	exit 0
+fi
+
+justexecutable=${justexecutable:-"just"};
+
+if ! command -v just >/dev/null 2>&1
+then
+	cat <<\EOF
+Error: Just wasn't found in the PATH.
+
+Just is recommended to move around this project, doing things the manual way
+is not recommended because the way things are done can change.
+
+Just allows us to make an interface to ever changing workflows.
+
+In the case of having another executable name run
+
+	git config hooks.justexecutable <path>
+
+Otherwise, if you want to disable the use of just
+
+	git config hooks.justignore true
+	EOF;
+
+	exit 1;
+fi
+
+just test code clippy fmt;
+
+if [[ $? != 0 ]]
+then
+	cat <<\EOF
+Error: Tests failed!
+
+The test suite exited with a non 0 exit code.
+
+These tests are enforced in the server side, and you won't be able to merge
+a pull request unless this is mitigated.
+
+It is recommended to not make "apply cargo fmt" commits as these will be required
+to be squashed.
+	EOF;
+
+	exit 1;
+fi

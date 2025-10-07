@@ -2,7 +2,7 @@ use bon::Builder;
 use instant::{Duration, Instant};
 use palette::Srgb;
 use uuid::Uuid;
-use yew::{Callback, Properties};
+use yew::Callback;
 
 use crate::utils::colors::{ERROR_RED, INFO_BLUE, SUCCESS_GREEN};
 use crate::utils::notifications::component::{

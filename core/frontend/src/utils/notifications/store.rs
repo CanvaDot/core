@@ -1,14 +1,8 @@
 use std::cell::RefCell;
-use std::error::Error;
 use std::rc::Rc;
-use std::slice::Iter;
 
-use instant::{Duration, Instant};
-use palette::Srgb;
 use uuid::Uuid;
-use yew::{Callback, Properties};
 
-use crate::utils::colors::{ERROR_RED, INFO_BLUE, SUCCESS_GREEN};
 use crate::utils::notifications::notification::Notification;
 use crate::utils::types::InRef;
 

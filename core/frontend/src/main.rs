@@ -1,5 +1,6 @@
 #![deny(clippy::pedantic)]
 #![deny(clippy::match_like_matches_macro)]
+#![deny(warnings)]
 
 #[cfg(not(feature = "coverage"))]
 use ::{

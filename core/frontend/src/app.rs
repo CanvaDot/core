@@ -3,6 +3,7 @@ use log::info;
 use palette::Srgb;
 use yew::prelude::*;
 
+use crate::components::canvas::Canvas;
 use crate::components::color_picker::ColorPicker;
 use crate::components::hooks::notifications::{use_notifications, ResultReport};
 use crate::components::notifications::hub::NotificationHub;
@@ -12,6 +13,9 @@ use crate::utils::notifications::store::NotificationStore;
 use crate::utils::types::InRef;
 
 pub type SharedAppContext = UseStateHandle<AppContext>;
+
+const CANVAS_HEIGHT: u32 = 1000;
+const CANVAS_WIDTH: u32 = 1000;
 
 #[derive(Default, Clone, PartialEq)]
 pub struct AppContext {
@@ -74,6 +78,7 @@ pub fn app() -> Html {
         <ContextProvider<SharedAppContext> context={app_context.clone()}>
             <NotificationHub class="global-notification-hub" app_context={app_context.clone()} />
             <ColorPicker class="global-color-picker" on_draw={on_draw} />
+            <Canvas height={CANVAS_HEIGHT} width={CANVAS_WIDTH} />
         </ContextProvider<SharedAppContext>>
     }
 }

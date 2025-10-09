@@ -1,0 +1,14 @@
+
+.canvas-main {
+  position: absolute;
+
+  top: var(--top);
+  left: var(--left);
+
+  background-color: #F1F1F1;
+
+  z-index: 0;
+
+  transform: scale(var(--scale));
+  transform-origin: center;
+}

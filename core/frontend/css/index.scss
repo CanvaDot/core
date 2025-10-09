@@ -1,3 +1,4 @@
+@use "components/canvas.scss";
 @use "components/color_picker.scss";
 @use "components/common.scss";
 @use "components/notifications.scss";
@@ -17,6 +18,8 @@ body, #app {
 
   height: 100vh;
   width: 100vw;
+
+  overflow: hidden;
 }
 
 // default slider styles.
@@ -50,6 +53,8 @@ input[type="number"]::-webkit-outer-spin-button {
   top: 100%;
 
   transform: translate(20px, calc(-100% - 20px));
+
+  z-index: 1000;
 }
 
 .global-notification-hub {
@@ -62,4 +67,6 @@ input[type="number"]::-webkit-outer-spin-button {
   min-width: 250px;
 
   transform: translate(calc(-100% - 20px), calc(-100% - 20px));
+
+  z-index: 1000;
 }

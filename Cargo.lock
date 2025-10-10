@@ -632,6 +632,7 @@ dependencies = [
  "instant",
  "itertools",
  "log",
+ "num-traits",
  "palette",
  "serde",
  "serde_json",

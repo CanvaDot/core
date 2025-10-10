@@ -78,7 +78,7 @@ pub fn app() -> Html {
         <ContextProvider<SharedAppContext> context={app_context.clone()}>
             <NotificationHub class="global-notification-hub" app_context={app_context.clone()} />
             <ColorPicker class="global-color-picker" on_draw={on_draw} />
-            <Canvas height={CANVAS_HEIGHT} width={CANVAS_WIDTH} />
+            <Canvas pixel_height={CANVAS_HEIGHT} pixel_width={CANVAS_WIDTH} />
         </ContextProvider<SharedAppContext>>
     }
 }

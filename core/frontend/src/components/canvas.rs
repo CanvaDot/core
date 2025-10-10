@@ -1,7 +1,8 @@
-use gloo::events::EventListener;
+use gloo::{events::EventListener, utils::document};
 use gloo::utils::window;
 use thiserror::Error;
 use wasm_bindgen::JsCast;
+use web_sys::Element;
 use yew::prelude::*;
 
 use crate::{components::hooks::notifications::{use_notifications, ResultReport}, utils::types::TupleCords};
@@ -46,7 +47,11 @@ pub fn canvas(props: &CanvasProps) -> Html {
     let position = use_state(|| props.default_position.unwrap_or((0.0, 0.0)));
     let last_position = use_mut_ref(|| *position);
 
+    let canvas_ref = use_node_ref();
+
     {
+        let canvas_ref = canvas_ref.clone();
+
         let zoom_level = zoom_level.clone();
         let is_dragging = is_dragging.clone();
         let position = position.clone();
@@ -107,6 +112,7 @@ pub fn canvas(props: &CanvasProps) -> Html {
                 let last_position = last_position.clone();
                 let position = position.clone();
                 let notification_hub = notification_hub.clone();
+                let canvas_ref = canvas_ref.clone();
 
                 EventListener::new(&window_inst, "mousemove", move |event| {
                     if !*is_dragging {
@@ -117,6 +123,20 @@ pub fn canvas(props: &CanvasProps) -> Html {
                         .dyn_ref::<MouseEvent>()
                         .ok_or(CanvasError::DynCastError)
                         .or_notify(&notification_hub);
+
+                    let element_under_cursor = document()
+                        .element_from_point(
+                            event.client_x() as f32,
+                            event.client_y() as f32
+                        );
+
+                    if let Some(element_under_cursor) = element_under_cursor {
+                        if let Some(canvas_element) = canvas_ref.cast::<Element>() {
+                            if element_under_cursor != canvas_element {
+                                return;
+                            }
+                        }
+                    }
 
                     let (lx, ly) = *last_position.borrow();
                     let dx = event.client_x() as f64 - lx;
@@ -168,6 +188,8 @@ pub fn canvas(props: &CanvasProps) -> Html {
 
     html! {
         <canvas
+            ref={canvas_ref}
+
             id={props.id.clone()}
             class={classes!("canvas-main", &props.class)}
 

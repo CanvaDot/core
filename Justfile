@@ -38,10 +38,11 @@ hide_stderr := if env("DEBUG", "0") == "1" { "" } else { "2>/dev/null" }
 	set -e;
 
 	done="";
+	fail="false";
 	function run_cmd() {
 		program=("${@:2}");
 		if ! echo "$done" | grep "$1" 1>/dev/null 2>&1; then
-			"${program[@]}" || echo "$1 FAILED!";
+			"${program[@]}" || fail="true" echo "$1 FAILED!";
 			done="$done $1";
 		else
 			echo "Skipping '$1', already ran!";
@@ -59,6 +60,11 @@ hide_stderr := if env("DEBUG", "0") == "1" { "" } else { "2>/dev/null" }
 			*) echo "Unknown command '$target'." ;;
 		esac
 	done
+
+	if [[ "$fail" == "true" ]]
+	then
+		exit 1;
+	fi
 
 
 @coverage export_path="":

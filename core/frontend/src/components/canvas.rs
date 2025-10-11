@@ -1,5 +1,5 @@
 use gloo::{events::EventListener, utils::document};
-use gloo::utils::window;
+use gloo::utils::{body, window};
 use thiserror::Error;
 use wasm_bindgen::JsCast;
 use web_sys::Element;
@@ -86,12 +86,30 @@ pub fn canvas(props: &CanvasProps) -> Html {
                 let is_dragging = is_dragging.clone();
                 let last_position = last_position.clone();
                 let notification_hub = notification_hub.clone();
+                let canvas_ref = canvas_ref.clone();
 
                 EventListener::new(&window_inst, "mousedown", move |event| {
                     let event = event
                         .dyn_ref::<MouseEvent>()
                         .ok_or(CanvasError::DynCastError)
                         .or_notify(&notification_hub);
+
+                    let element_under_cursor = document()
+                        .element_from_point(
+                            event.client_x() as f32,
+                            event.client_y() as f32
+                        );
+
+                    if let (Some(element_under_cursor), Some(canvas_element))
+                        = (element_under_cursor, canvas_ref.cast::<Element>()) {
+
+                        if
+                            element_under_cursor != canvas_element
+                            && element_under_cursor != *body()
+                        {
+                            return;
+                        }
+                    }
 
                     is_dragging.set(true);
                     *last_position.borrow_mut() =
@@ -112,7 +130,6 @@ pub fn canvas(props: &CanvasProps) -> Html {
                 let last_position = last_position.clone();
                 let position = position.clone();
                 let notification_hub = notification_hub.clone();
-                let canvas_ref = canvas_ref.clone();
 
                 EventListener::new(&window_inst, "mousemove", move |event| {
                     if !*is_dragging {
@@ -123,20 +140,6 @@ pub fn canvas(props: &CanvasProps) -> Html {
                         .dyn_ref::<MouseEvent>()
                         .ok_or(CanvasError::DynCastError)
                         .or_notify(&notification_hub);
-
-                    let element_under_cursor = document()
-                        .element_from_point(
-                            event.client_x() as f32,
-                            event.client_y() as f32
-                        );
-
-                    if let Some(element_under_cursor) = element_under_cursor {
-                        if let Some(canvas_element) = canvas_ref.cast::<Element>() {
-                            if element_under_cursor != canvas_element {
-                                return;
-                            }
-                        }
-                    }
 
                     let (lx, ly) = *last_position.borrow();
                     let dx = event.client_x() as f64 - lx;

@@ -22,6 +22,14 @@ body, #app {
   overflow: hidden;
 }
 
+#app {
+  pointer-events: none;
+
+  & > * {
+    pointer-events: auto;
+  }
+}
+
 // default slider styles.
 input[type="range"] {
   -webkit-appearance: none;

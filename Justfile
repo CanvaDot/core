@@ -42,7 +42,11 @@ hide_stderr := if env("DEBUG", "0") == "1" { "" } else { "2>/dev/null" }
 	function run_cmd() {
 		program=("${@:2}");
 		if ! echo "$done" | grep "$1" 1>/dev/null 2>&1; then
-			"${program[@]}" || fail="true" echo "$1 FAILED!";
+			if ! "${program[@]}"
+			then
+				echo "$1 FAILED!";
+				fail="true";
+			fi
 			done="$done $1";
 		else
 			echo "Skipping '$1', already ran!";

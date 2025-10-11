@@ -4,7 +4,6 @@ use gloo::storage::errors::StorageError;
 use gloo::storage::{LocalStorage, Storage};
 use palette::rgb::channels::Rgba;
 use palette::Srgb;
-use thiserror::Error;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
@@ -17,16 +16,11 @@ use crate::components::hooks::notifications::{
 };
 use crate::utils::color_memory::ColorMemory;
 use crate::utils::colors::{compose, decompose};
+use crate::utils::error::GenericError;
 
 const MAX_LAST_COLORS: usize = 5;
 const COLOR_MEMORY_KEY: &str = "color_memory";
 const LAST_COLOR_KEY: &str = "last_color";
-
-#[derive(Error, Debug)]
-enum ColorPickerError {
-    #[error("Couldn't cast the event target.")]
-    DynCastError,
-}
 
 #[derive(Properties, PartialEq)]
 pub struct ColorPickerProps {
@@ -123,7 +117,7 @@ pub fn color_picker(props: &ColorPickerProps) -> Html {
         Callback::from(move |event: InputEvent| {
             let input = event
                 .target_dyn_into::<HtmlInputElement>()
-                .ok_or(ColorPickerError::DynCastError)
+                .ok_or(GenericError::DynCastError)
                 .or_notify(&notification_hub);
 
             let value = input.value_as_number();

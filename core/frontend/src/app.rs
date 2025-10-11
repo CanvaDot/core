@@ -76,9 +76,20 @@ pub fn app() -> Html {
 
     html! {
         <ContextProvider<SharedAppContext> context={app_context.clone()}>
-            <NotificationHub class="global-notification-hub" app_context={app_context.clone()} />
+            <NotificationHub
+                class="global-notification-hub"
+                app_context={app_context.clone()}
+                id="notification-hub"
+            />
             <ColorPicker class="global-color-picker" on_draw={on_draw} />
-            <Canvas pixel_height={CANVAS_HEIGHT} pixel_width={CANVAS_WIDTH} />
+            <Canvas
+                pixel_height={CANVAS_HEIGHT}
+                pixel_width={CANVAS_WIDTH}
+                not_affecting_movement={vec![
+                    "app".to_string(),
+                    "notification-hub".to_string()
+                ]}
+            />
         </ContextProvider<SharedAppContext>>
     }
 }

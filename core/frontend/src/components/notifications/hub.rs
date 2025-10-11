@@ -20,6 +20,9 @@ use crate::components::notifications::notification::NotificationElement;
 pub struct NotificationHubProps {
     #[prop_or_default]
     pub class: Option<String>,
+    #[prop_or_default]
+    pub id: Option<String>,
+
     #[prop_or(5)]
     pub max_notifications: u8,
     pub app_context: SharedAppContext,
@@ -66,7 +69,7 @@ pub fn notification_hub(props: &NotificationHubProps) -> Html {
     let all_notifs = notifs_borrow.borrow();
 
     html! {
-        <aside class={classes!(&props.class, "notification-hub")} aria-live="polite">
+        <aside class={classes!(&props.class, "notification-hub")} aria-live="polite" id={props.id.clone()}>
             {for all_notifs.iter().map(|notification| html! {
                 <NotificationElement
                     notification={Rc::clone(notification)}
